@@ -1,5 +1,6 @@
 // Catalogue de secours, identique à supabase/seed.sql.
 // Utilisé uniquement si Supabase n'est pas configuré ou injoignable : le site reste consultable.
+import { MODELS } from "@/lib/models";
 import type { Category, Product, Variant } from "@/lib/types";
 
 export const FALLBACK_CATEGORIES: Category[] = [
@@ -8,75 +9,81 @@ export const FALLBACK_CATEGORIES: Category[] = [
   { id: 3, slug: "sculpturales", name: "Pièces sculpturales", description: "Des formes organiques, presque des œuvres." },
 ];
 
-type Raw = Omit<Product, "id" | "category" | "images" | "variants"> & {
+type Raw = Omit<Product, "id" | "category" | "images" | "variants" | "model_url"> & {
   category: string;
+  images: string[]; // légendes, dans l'ordre de /public/products/<slug>/<n>.jpg
   variants: [string, string, string, string, number, number][]; // code, couleur, hex, matière, supplément, stock
 };
 
 const RAW: Raw[] = [
   {
-    slug: "montaigne", name: "Montaigne", tagline: "Canapé-lit pour les appartements de ville",
-    description: "Un canapé trois places aux lignes tendues qui se déplie en un vrai lit de 140 × 195 cm. Le mécanisme est invisible, l'assise reste ferme et généreuse au quotidien.",
-    story: "Pensé pour les surfaces parisiennes où chaque mètre compte : un seul meuble, deux usages, aucun compromis sur l'allure.",
-    category: "convertibles", base_price: 1890, compare_at_price: 2190, width_cm: 210, depth_cm: 95, height_cm: 82, seat_height_cm: 44, seats: 3,
-    materials: "Bouclé de laine et polyester recyclé, mousse haute résilience 35 kg/m³", frame: "Hêtre massif et acier", lead_time_weeks: 5, is_featured: true,
-    variants: [["IVO", "Ivoire", "#EEE8DC", "Bouclé", 0, 12], ["GRE", "Grège", "#C9BBA6", "Bouclé", 0, 6], ["ANT", "Anthracite", "#3B3A38", "Bouclé", 120, 3]],
+    slug: "meandre", name: "Méandre", tagline: "Canapé incurvé en bouclé",
+    description: "Une longue courbe de bouclé blanc qui épouse la pièce plutôt que le mur. Son dossier ondulé dessine deux espaces de conversation ; on s'y installe de tous côtés.",
+    story: "Dessiné pour les grands volumes : une pièce que l'on contourne, que l'on regarde, avant de s'y asseoir.",
+    category: "sculpturales", base_price: 2990, compare_at_price: null, width_cm: 240, depth_cm: 85, height_cm: 66, seat_height_cm: 42, seats: 4,
+    materials: "Bouclé, mousse haute résilience", frame: "Bois massif", lead_time_weeks: 6, is_featured: true,
+    images: ["courbe du dossier en bouclé", "dans un salon lumineux", "vue de trois-quarts", "vue d'ensemble", "détail du bouclé"],
+    variants: [["IVO", "Ivoire", "#F1ECE2", "Bouclé", 0, 6], ["ECR", "Écru", "#E6DCCB", "Bouclé", 0, 4], ["GRE", "Grège", "#C9BBA6", "Bouclé", 150, 2]],
   },
   {
-    slug: "rive-gauche", name: "Rive Gauche", tagline: "Convertible rétro aux accents seventies",
-    description: "Un convertible multifonction inspiré du mobilier américain des années 70. Il passe de canapé à méridienne puis à couchage d'appoint en un geste.",
-    story: "Une silhouette basse et décontractée, pour les salons qui aiment recevoir tard.",
-    category: "convertibles", base_price: 1490, compare_at_price: null, width_cm: 195, depth_cm: 92, height_cm: 78, seat_height_cm: 42, seats: 3,
-    materials: "Velours épais, garnissage plumes et mousse", frame: "Pin massif, piètement noyer", lead_time_weeks: 4, is_featured: false,
-    variants: [["COG", "Cognac", "#9A5B33", "Velours", 0, 8], ["CRE", "Crème", "#EFE6D6", "Velours", 0, 10], ["OLI", "Olive", "#6B6A45", "Velours", 90, 2]],
-  },
-  {
-    slug: "petale", name: "Pétale", tagline: "Canapé design aux courbes de fleur",
-    description: "Des coussins en pétales qui s'ouvrent autour de l'assise. Une pièce de designer, douce et graphique, qui transforme un salon en galerie.",
-    story: "Chaque pétale est garni et cousu à la main dans notre atelier partenaire, puis assemblé un à un.",
-    category: "sculpturales", base_price: 2690, compare_at_price: null, width_cm: 230, depth_cm: 105, height_cm: 74, seat_height_cm: 40, seats: 3,
-    materials: "Chenille crème, plumes et mousse à mémoire de forme", frame: "Bois massif lamellé-collé", lead_time_weeks: 7, is_featured: true,
-    variants: [["CRE", "Crème", "#F1E9DC", "Chénille", 0, 5], ["ROS", "Rose poudré", "#E3C6BC", "Chénille", 150, 4], ["SAU", "Sauge", "#A9B29A", "Chénille", 150, 3]],
+    slug: "petale", name: "Pétale", tagline: "Fauteuil pivotant et son pouf",
+    description: "Un fauteuil en pétales de bouclé posé sur une base pivotante en acier noir, livré avec son pouf assorti. On s'y love, puis on pivote vers la fenêtre ou vers la conversation.",
+    story: "Chaque pétale est garni séparément pour soutenir le dos jusqu'à la nuque.",
+    category: "sculpturales", base_price: 1290, compare_at_price: null, width_cm: 100, depth_cm: 100, height_cm: 70, seat_height_cm: 40, seats: 1,
+    materials: "Bouclé, garnissage coton et mousse — pouf Ø 60 × H 25 cm inclus", frame: "Base pivotante en acier laqué noir", lead_time_weeks: 4, is_featured: true,
+    images: ["fauteuil sur sa base pivotante", "dans un salon", "le pouf assorti"],
+    variants: [["CRE", "Crème", "#F1E9DC", "Bouclé", 0, 6], ["ROS", "Rose poudré", "#E3C6BC", "Bouclé", 0, 4], ["BLE", "Bleu ciel", "#BFD0DD", "Bouclé", 0, 3], ["SAU", "Sauge", "#A9B29A", "Bouclé", 0, 3], ["GRI", "Gris perle", "#BDBAB4", "Bouclé", 0, 2]],
   },
   {
     slug: "galet", name: "Galet", tagline: "Canapé organique en laine d'agneau",
-    description: "Une forme irrégulière, comme polie par l'eau. Habillé d'une laine d'agneau bouclée, le Galet se pose au centre de la pièce et s'admire sous tous les angles.",
-    story: "Aucune ligne droite : le Galet a été dessiné à la main avant d'être sculpté dans la mousse.",
-    category: "sculpturales", base_price: 3190, compare_at_price: null, width_cm: 260, depth_cm: 120, height_cm: 72, seat_height_cm: 41, seats: 4,
-    materials: "Laine d'agneau bouclée (fausse fourrure premium), mousse sculptée", frame: "Contreplaqué de bouleau", lead_time_weeks: 8, is_featured: true,
-    variants: [["NEI", "Neige", "#F6F3EE", "Laine d'agneau", 0, 4], ["LIN", "Lin", "#D8CDBB", "Laine d'agneau", 0, 3], ["CAR", "Caramel", "#B07A4F", "Laine d'agneau", 200, 2]],
+    description: "Un trois-places aux coussins bombés et aux accoudoirs sculptés, habillé d'une laine d'agneau bouclée. Sans un seul angle, il devient naturellement la pièce centrale du salon.",
+    story: "Ses formes ont été dessinées à la main avant d'être sculptées dans la mousse.",
+    category: "sculpturales", base_price: 2790, compare_at_price: null, width_cm: 230, depth_cm: 95, height_cm: 75, seat_height_cm: 42, seats: 3,
+    materials: "Sherpa (laine d'agneau synthétique), mousse haute résilience", frame: "Bois massif", lead_time_weeks: 6, is_featured: true,
+    images: ["vue de face", "dans un salon", "vue de trois-quarts", "avec ses fauteuils", "ambiance"],
+    variants: [["NEI", "Neige", "#F4F0E8", "Sherpa", 0, 4], ["LIN", "Lin", "#D8CDBB", "Sherpa", 0, 3], ["CAR", "Caramel", "#B07A4F", "Sherpa", 200, 2]],
   },
   {
-    slug: "alma", name: "Alma", tagline: "Canapé droit en chénille",
-    description: "Un canapé droit d'une grande sobriété, recouvert d'une chénille au toucher velouté. Ses coussins déhoussables et son assise profonde en font la pièce du quotidien.",
-    story: "La pièce que l'on garde vingt ans : intemporelle, robuste, facile à vivre.",
-    category: "canapes", base_price: 2290, compare_at_price: null, width_cm: 240, depth_cm: 100, height_cm: 80, seat_height_cm: 43, seats: 4,
-    materials: "Chénille 450 g/m², garnissage plumes et mousse", frame: "Hêtre massif", lead_time_weeks: 5, is_featured: false,
-    variants: [["CRE", "Crème", "#EDE4D3", "Chénille", 0, 14], ["TAU", "Taupe", "#8C7B6B", "Chénille", 0, 9], ["PER", "Gris perle", "#BDBAB4", "Chénille", 0, 7]],
-  },
-  {
-    slug: "nuage", name: "Nuage", tagline: "Canapé cloud, minimalisme nordique",
-    description: "Le confort d'un nuage dans une silhouette nordique épurée. Ses modules profonds invitent à s'y enfoncer, ses volumes généreux restent d'une élégance absolue.",
+    slug: "nuage", name: "Nuage", tagline: "Canapé nuage, minimalisme nordique",
+    description: "Des volumes arrondis qui s'enchaînent comme un nuage, recouverts d'un bouclé dense. Existe aussi en fauteuil (110 cm) et en deux-places (165 cm).",
     story: "Inspiré des intérieurs scandinaves : lumière, matière, et rien de superflu.",
-    category: "canapes", base_price: 2890, compare_at_price: 3290, width_cm: 280, depth_cm: 110, height_cm: 70, seat_height_cm: 42, seats: 4,
-    materials: "Bouclé crème, garnissage plumes et ouate", frame: "Pin nordique massif", lead_time_weeks: 6, is_featured: true,
-    variants: [["IVO", "Ivoire", "#F3EEE4", "Bouclé", 0, 6], ["SAB", "Sable", "#D6C3A5", "Bouclé", 0, 5], ["BRU", "Gris brume", "#A7A5A0", "Bouclé", 180, 1]],
+    category: "canapes", base_price: 2190, compare_at_price: 2490, width_cm: 190, depth_cm: 78, height_cm: 85, seat_height_cm: 42, seats: 3,
+    materials: "Bouclé, mousse haute résilience", frame: "Bois massif", lead_time_weeks: 5, is_featured: true,
+    images: ["canapé trois-places ivoire", "fauteuil ivoire", "ensemble dans un salon", "en noir encre", "fauteuil noir encre"],
+    variants: [["IVO", "Ivoire", "#F3EEE4", "Bouclé", 0, 6], ["NOI", "Noir encre", "#1E1D1C", "Bouclé", 0, 3]],
+  },
+  {
+    slug: "alma", name: "Alma", tagline: "Canapé droit en chénille, assise profonde",
+    description: "Des coussins boudinés en chénille, 50 cm de profondeur d'assise et des appuie-tête relevables soulignés d'un liseré cognac. Alma se compose de 180 à 390 cm selon votre pièce.",
+    story: "La pièce du quotidien : on s'y allonge, on y reçoit, on la garde vingt ans.",
+    category: "canapes", base_price: 2390, compare_at_price: null, width_cm: 240, depth_cm: 85, height_cm: 80, seat_height_cm: 40, seats: 4,
+    materials: "Chénille, mousse haute résilience", frame: "Bois massif", lead_time_weeks: 5, is_featured: false,
+    images: ["en crème", "en gris perle", "en vert forêt", "détail des appuie-tête", "nuancier des coloris"],
+    variants: [["CRE", "Crème", "#EDE4D3", "Chénille", 0, 12], ["GRI", "Gris perle", "#B9B8B4", "Chénille", 0, 8], ["VER", "Vert forêt", "#5E6F4E", "Chénille", 0, 5], ["BLE", "Bleu nuit", "#2F4B5C", "Chénille", 0, 3]],
+  },
+  {
+    slug: "rive-gauche", name: "Rive Gauche", tagline: "Convertible rétro en cuir huilé",
+    description: "Un deux-places en cuir huilé-ciré au capitonnage généreux, qui se déplie en un lit de 200 × 150 cm. Son dossier s'incline sur cinq positions et ses accoudoirs cachent des poches de rangement.",
+    story: "L'esprit des clubs américains des années 70, repensé pour les appartements d'aujourd'hui.",
+    category: "convertibles", base_price: 1690, compare_at_price: 1890, width_cm: 150, depth_cm: 76, height_cm: 80, seat_height_cm: 42, seats: 2,
+    materials: "Cuir huilé-ciré, mousse haute résilience ou latex", frame: "Bois massif, pieds en acier inoxydable", lead_time_weeks: 4, is_featured: false,
+    images: ["vue de trois-quarts", "dans un salon", "avec plaid", "version une et deux places"],
+    variants: [["COG", "Cognac", "#9A5B33", "Cuir huilé · mousse HR", 0, 8], ["LAT", "Cognac latex", "#9A5B33", "Cuir huilé · latex naturel", 120, 4]],
   },
 ];
 
-const VIEWS = ["vue de face", "vue de trois-quarts", "détail de la matière"];
-
-export const FALLBACK_PRODUCTS: Product[] = RAW.map(({ category, variants, ...p }) => {
+export const FALLBACK_PRODUCTS: Product[] = RAW.map(({ category, variants, images, ...p }) => {
   const cat = FALLBACK_CATEGORIES.find((c) => c.slug === category)!;
   return {
     ...p,
     id: `local-${p.slug}`,
+    model_url: MODELS[p.slug] ?? null,
     category: { slug: cat.slug, name: cat.name },
-    images: VIEWS.map((v, i) => ({ id: `${p.slug}-${i + 1}`, url: `/products/${p.slug}/${i + 1}.jpg`, alt: `${p.name} — ${v}`, position: i + 1 })),
+    images: images.map((alt, i) => ({ id: `${p.slug}-${i + 1}`, url: `/products/${p.slug}/${i + 1}.jpg`, alt: `${p.name} — ${alt}`, position: i + 1 })),
     variants: variants.map(
       ([code, color_name, color_hex, fabric, price_delta, stock], i): Variant => ({
         id: `local-${p.slug}-${code}`,
-        sku: `${p.slug.slice(0, 3).toUpperCase()}-${code}`,
+        sku: `${p.slug.replace("-", "").slice(0, 3).toUpperCase()}-${code}`,
         color_name, color_hex, fabric, price_delta, stock, position: i + 1,
       })
     ),

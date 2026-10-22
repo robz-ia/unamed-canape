@@ -18,7 +18,7 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
           seed={index}
           tone={product.variants[0]?.color_hex}
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="aspect-[4/5]"
+          className="aspect-square"
         />
         <div className="absolute top-4 left-4 flex gap-2">
           {product.compare_at_price && <span className="eyebrow bg-paper px-2.5 py-1">Offre</span>}

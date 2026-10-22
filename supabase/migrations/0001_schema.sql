@@ -113,6 +113,7 @@ create table public.products (
   materials        text,
   frame            text,
   lead_time_weeks  smallint not null default 6,
+  model_url        text,            -- modèle 3D .glb (visionneuse 360°)
   is_featured      boolean not null default false,
   is_active        boolean not null default true,
   created_at       timestamptz not null default now(),
