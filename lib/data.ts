@@ -1,4 +1,5 @@
 import { FALLBACK_CATEGORIES, FALLBACK_PRODUCTS } from "@/lib/catalog";
+import { readGuestCart } from "@/lib/guest-cart";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { CartLine, Category, Product } from "@/lib/types";
@@ -8,13 +9,18 @@ const PRODUCT_SELECT = `
   width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame,
   lead_time_weeks, option1_name, option2_name, is_featured,
   category:categories ( slug, name ),
+  memberships:product_categories ( option1, category:categories ( slug ) ),
   images:product_images ( id, url, alt, option1, option2, on_white, position ),
   variants:product_variants ( id, sku, option1, option2, swatch_hex, price_delta, stock, is_default, position )
 `;
 
-function normalize(p: Product): Product {
+type RawMembership = { option1: string | null; category: { slug: string } | null };
+
+function normalize(raw: Product): Product {
+  const p = raw as unknown as Omit<Product, "memberships"> & { memberships: RawMembership[] };
   return {
     ...p,
+    memberships: (p.memberships ?? []).map((m) => ({ slug: m.category?.slug ?? "", option1: m.option1 })),
     base_price: Number(p.base_price),
     compare_at_price: p.compare_at_price ? Number(p.compare_at_price) : null,
     images: [...p.images].sort((a, b) => a.position - b.position),
@@ -25,7 +31,9 @@ function normalize(p: Product): Product {
 }
 
 function fallbackProducts(opts: { category?: string; sort?: string; featured?: boolean }) {
-  let list = FALLBACK_PRODUCTS.filter((p) => (!opts.featured || p.is_featured) && (!opts.category || p.category?.slug === opts.category));
+  let list = FALLBACK_PRODUCTS.filter((p) => !opts.featured || p.is_featured)
+    .filter((p) => !opts.category || p.memberships.some((m) => m.slug === opts.category))
+    .map((p) => ({ ...p, focus: p.memberships.find((m) => m.slug === opts.category)?.option1 ?? null }));
   if (opts.sort === "prix-asc") list = [...list].sort((a, b) => a.base_price - b.base_price);
   else if (opts.sort === "prix-desc") list = [...list].sort((a, b) => b.base_price - a.base_price);
   else list = [...list].sort((a, b) => Number(b.is_featured) - Number(a.is_featured));
@@ -47,9 +55,15 @@ async function fetchProducts(opts: { category?: string; sort?: string; featured?
   let query = supabase.from("products").select(PRODUCT_SELECT).eq("is_active", true);
 
   if (opts.featured) query = query.eq("is_featured", true);
+  // Appartenance n-n : un produit peut figurer dans plusieurs catégories
+  let focus = new Map<string, string | null>();
   if (opts.category) {
-    const { data: cat } = await supabase.from("categories").select("id").eq("slug", opts.category).single();
-    if (cat) query = query.eq("category_id", cat.id);
+    const { data: links } = await supabase
+      .from("product_categories")
+      .select("product_id, option1, category:categories!inner ( slug )")
+      .eq("category.slug", opts.category);
+    focus = new Map((links ?? []).map((l) => [l.product_id as string, l.option1 as string | null]));
+    query = query.in("id", [...focus.keys()]);
   }
 
   if (opts.sort === "prix-asc") query = query.order("base_price", { ascending: true });
@@ -58,7 +72,7 @@ async function fetchProducts(opts: { category?: string; sort?: string; featured?
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data as unknown as Product[]).map(normalize);
+  return (data as unknown as Product[]).map(normalize).map((p) => ({ ...p, focus: focus.get(p.id) ?? null }));
 }
 
 export async function getProduct(slug: string) {
@@ -73,7 +87,7 @@ export async function getProduct(slug: string) {
 export async function getCategories() {
   if (!SUPABASE_CONFIGURED) return FALLBACK_CATEGORIES;
   const supabase = await createClient();
-  const { data, error } = await supabase.from("categories").select("id, slug, name, description").order("position");
+  const { data, error } = await supabase.from("categories").select("id, slug, name, description, cover_url").order("position");
   if (error) return FALLBACK_CATEGORIES;
   return (data ?? []) as Category[];
 }
@@ -102,24 +116,50 @@ export async function getUser() {
 }
 
 export async function getCartCount() {
-  if (!SUPABASE_CONFIGURED) return 0;
+  const guest = async () => (await readGuestCart()).reduce((s, l) => s + l.q, 0);
+  if (!SUPABASE_CONFIGURED) return guest();
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return 0;
+  if (!user) return guest();
   const { data } = await supabase.from("carts").select("cart_items ( quantity )").eq("user_id", user.id).maybeSingle();
   const items = (data?.cart_items ?? []) as { quantity: number }[];
   return items.reduce((s, i) => s + i.quantity, 0);
 }
 
-export async function getCart() {
-  if (!SUPABASE_CONFIGURED) return [];
+// Lignes du panier invité, reconstituées à partir du catalogue
+async function guestCartLines(): Promise<CartLine[]> {
+  const lines = await readGuestCart();
+  if (!lines.length) return [];
+  const products = await getProducts();
+  return lines.flatMap((l) => {
+    for (const p of products) {
+      const v = p.variants.find((x) => x.id === l.v);
+      if (v) {
+        const product = { id: p.id, slug: p.slug, name: p.name, base_price: p.base_price, images: p.images };
+        return [{ id: v.id, quantity: Math.min(l.q, Math.max(v.stock, 1)), variant: { ...v, product } }];
+      }
+    }
+    return []; // variante disparue du catalogue
+  });
+}
+
+export async function findVariant(variantId: string) {
+  for (const p of await getProducts()) {
+    const v = p.variants.find((x) => x.id === variantId);
+    if (v) return v;
+  }
+  return null;
+}
+
+export async function getCart(): Promise<CartLine[]> {
+  if (!SUPABASE_CONFIGURED) return guestCartLines();
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
+  if (!user) return guestCartLines();
   const { data } = await supabase
     .from("carts")
     .select(

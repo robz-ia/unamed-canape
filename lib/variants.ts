@@ -25,3 +25,17 @@ export const imagesFor = (images: ProductImage[], v?: Pick<Variant, "option1" | 
   images.filter((img) => !v || ((!img.option1 || img.option1 === v.option1) && (!img.option2 || img.option2 === v.option2)));
 
 export const coverFor = (p: Product, v = defaultVariant(p)) => imagesFor(p.images, v)[0] ?? p.images[0];
+
+// Dans une catégorie, un produit peut être mis en avant dans une configuration précise.
+export const focusVariants = (p: Product) => (p.focus ? p.variants.filter((v) => v.option1 === p.focus) : p.variants);
+
+export const focusVariant = (p: Product) => {
+  const pool = focusVariants(p);
+  return pool.find((v) => v.is_default) ?? pool.find((v) => v.stock > 0) ?? pool[0] ?? defaultVariant(p);
+};
+
+export const focusPrice = (p: Product) => p.base_price + Math.min(...focusVariants(p).map((v) => v.price_delta));
+
+export const focusHasRange = (p: Product) => new Set(focusVariants(p).map((v) => v.price_delta)).size > 1;
+
+export const productHref = (p: Product) => `/produit/${p.slug}${p.focus ? `?config=${encodeURIComponent(p.focus)}` : ""}`;

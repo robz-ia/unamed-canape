@@ -30,6 +30,7 @@ alter table public.addresses              enable row level security;
 alter table public.categories             enable row level security;
 alter table public.products               enable row level security;
 alter table public.product_images         enable row level security;
+alter table public.product_categories     enable row level security;
 alter table public.product_variants       enable row level security;
 alter table public.carts                  enable row level security;
 alter table public.cart_items             enable row level security;
@@ -63,6 +64,11 @@ create policy "categories: admin" on public.categories
 create policy "produits: lecture publique" on public.products
   for select using (is_active or public.is_admin());
 create policy "produits: admin" on public.products
+  for all using (public.is_admin()) with check (public.is_admin());
+
+create policy "appartenances: lecture publique" on public.product_categories
+  for select using (true);
+create policy "appartenances: admin" on public.product_categories
   for all using (public.is_admin()) with check (public.is_admin());
 
 create policy "images: lecture publique" on public.product_images

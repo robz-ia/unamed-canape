@@ -7,10 +7,10 @@ delete from public.products;
 delete from public.categories;
 delete from public.coupons where code in ('BIENVENUE10', 'SALON200');
 
-insert into public.categories (slug, name, description, position) values
-  ('canapes',     'Canapés',             'Des assises profondes, dessinées pour durer.', 1),
-  ('convertibles','Convertibles',        'Le salon le jour, la chambre d''amis le soir.', 2),
-  ('sculpturales','Pièces sculpturales', 'Des formes organiques, presque des œuvres.', 3);
+insert into public.categories (slug, name, description, cover_url, position) values
+  ('canapes',      'Canapés',      'Des assises profondes, dessinées pour durer.',      '/products/alma/2.jpg',        1),
+  ('fauteuils',    'Fauteuils',    'Une place à soi, pour lire, pivoter, s''y lover.',  '/products/petale/2.jpg',      2),
+  ('convertibles', 'Convertibles', 'Le salon le jour, la chambre d''amis le soir.',     '/products/rive-gauche/6.jpg', 3);
 
 with cat as (select id, slug from public.categories)
 insert into public.products
@@ -20,17 +20,17 @@ insert into public.products
 values
   ('meandre', 'Méandre',
    'Canapé incurvé en bouclé',
-   'Une longue courbe de bouclé qui épouse la pièce plutôt que le mur. Son dossier ondulé dessine deux espaces de conversation ; on s''y installe de tous côtés. Trois longueurs : 180, 210 ou 240 cm.',
+   'Une longue courbe de bouclé ivoire qui épouse la pièce plutôt que le mur. Son dossier ondulé dessine deux espaces de conversation ; on s''y installe de tous côtés. Trois longueurs : 180, 210 ou 240 cm.',
    'Dessiné pour les grands volumes : une pièce que l''on contourne, que l''on regarde, avant de s''y asseoir.',
-   (select id from cat where slug = 'sculpturales'), 2390, null,
-   240, 85, 66, 42, 4, 'Bouclé, mousse haute résilience', 'Bois massif', 6,
-   'Longueur', 'Coloris', true),
+   (select id from cat where slug = 'canapes'), 2390, null,
+   240, 85, 66, 42, 4, 'Bouclé ivoire, mousse haute résilience', 'Bois massif', 6,
+   'Longueur', null, true),
 
   ('petale', 'Pétale',
    'Fauteuil pivotant et son pouf',
    'Un fauteuil en pétales de bouclé posé sur une base pivotante en acier noir, livré avec son pouf assorti. On s''y love, puis on pivote vers la fenêtre ou vers la conversation.',
    'Chaque pétale est garni séparément pour soutenir le dos jusqu''à la nuque.',
-   (select id from cat where slug = 'sculpturales'), 1290, null,
+   (select id from cat where slug = 'fauteuils'), 1290, null,
    100, 100, 70, 40, 1, 'Bouclé, garnissage coton et mousse — pouf Ø 60 × H 25 cm inclus', 'Base pivotante en acier laqué noir', 4,
    'Coloris', null, true),
 
@@ -38,7 +38,7 @@ values
    'Canapé organique en laine d''agneau',
    'Un trois-places aux coussins bombés et aux accoudoirs sculptés, habillé d''une laine d''agneau bouclée. Sans un seul angle, il devient naturellement la pièce centrale du salon.',
    'Ses formes ont été dessinées à la main avant d''être sculptées dans la mousse.',
-   (select id from cat where slug = 'sculpturales'), 2790, null,
+   (select id from cat where slug = 'canapes'), 2790, null,
    230, 95, 75, 42, 3, 'Sherpa (laine d''agneau synthétique), mousse haute résilience', 'Bois massif', 6,
    'Coloris', null, true),
 
@@ -65,6 +65,23 @@ values
    (select id from cat where slug = 'convertibles'), 1190, null,
    150, 76, 80, 42, 2, 'Cuir huilé-ciré', 'Bois massif, pieds en acier inoxydable', 4,
    'Format', 'Garnissage', false);
+
+-- Appartenance aux catégories (un produit peut être dans plusieurs, selon sa configuration)
+insert into public.product_categories (product_id, category_id, option1)
+select p.id, c.id, m.o1
+  from (values
+    ('meandre',     'canapes',      null),
+    ('galet',       'canapes',      null),
+    ('alma',        'canapes',      null),
+    ('nuage',       'canapes',      'Canapé 190 cm'),
+    ('rive-gauche', 'canapes',      'Deux places'),
+    ('petale',      'fauteuils',    null),
+    ('nuage',       'fauteuils',    'Fauteuil 110 cm'),
+    ('rive-gauche', 'fauteuils',    'Une place'),
+    ('rive-gauche', 'convertibles', null)
+  ) as m(slug, cat, o1)
+  join public.products p on p.slug = m.slug
+  join public.categories c on c.slug = m.cat;
 
 -- Photos (public/products/<slug>/<n>.jpg). option1/option2 : photo propre à une option, sinon commune.
 insert into public.product_images (product_id, url, alt, option1, option2, on_white, position)
@@ -93,8 +110,10 @@ select p.id, '/products/' || p.slug || '/' || i.n || '.jpg', p.name || ' — ' |
     ('rive-gauche', 2, 'une place dans un salon',             'Une place',     null, false),
     ('rive-gauche', 3, 'deux places avec plaid',              'Deux places',   null, false),
     ('rive-gauche', 4, 'versions une et deux places',         'Une place',     null, true),
-    ('rive-gauche', 5, 'positions canapé, lit et méridienne', 'Deux places',   null, true),
-    ('rive-gauche', 6, 'dimensions du deux places',           'Deux places',   null, true)
+    ('rive-gauche', 5, 'deux places en position canapé',      'Deux places',   null, false),
+    ('rive-gauche', 6, 'deux places déplié en lit',           'Deux places',   null, false),
+    ('rive-gauche', 7, 'deux places en méridienne',           'Deux places',   null, false),
+    ('rive-gauche', 8, 'dimensions du deux places',           'Deux places',   null, true)
   ) as i(slug, n, alt, o1, o2, white) on i.slug = p.slug;
 
 -- Variantes (combinaisons d'options) & stock
@@ -102,23 +121,11 @@ insert into public.product_variants (product_id, sku, option1, option2, swatch_h
 select p.id, upper(left(replace(p.slug, '-', ''), 3)) || '-' || v.code, v.o1, v.o2, v.hex, v.delta, v.stock, v.def, v.pos
   from public.products p
   join (values
-    ('meandre',     '180-IVO', '180 cm',          'Ivoire',      '#F1ECE2',   0, 3, false,  1),
-    ('meandre',     '180-ECR', '180 cm',          'Écru',        '#E6DCCB',   0, 3, false,  2),
-    ('meandre',     '180-GRE', '180 cm',          'Grège',       '#C9BBA6', 150, 2, false,  3),
-    ('meandre',     '210-IVO', '210 cm',          'Ivoire',      '#F1ECE2', 300, 4, false,  4),
-    ('meandre',     '210-ECR', '210 cm',          'Écru',        '#E6DCCB', 300, 2, false,  5),
-    ('meandre',     '210-GRE', '210 cm',          'Grège',       '#C9BBA6', 450, 1, false,  6),
-    ('meandre',     '240-IVO', '240 cm',          'Ivoire',      '#F1ECE2', 600, 5, true,   7),
-    ('meandre',     '240-ECR', '240 cm',          'Écru',        '#E6DCCB', 600, 3, false,  8),
-    ('meandre',     '240-GRE', '240 cm',          'Grège',       '#C9BBA6', 750, 2, false,  9),
-    ('petale',      'CRE',     'Crème',           null,          '#F1E9DC',   0, 6, true,   1),
-    ('petale',      'ROS',     'Rose poudré',     null,          '#E3C6BC',   0, 4, false,  2),
-    ('petale',      'BLE',     'Bleu ciel',       null,          '#BFD0DD',   0, 3, false,  3),
-    ('petale',      'SAU',     'Sauge',           null,          '#A9B29A',   0, 3, false,  4),
-    ('petale',      'GRI',     'Gris perle',      null,          '#BDBAB4',   0, 2, false,  5),
-    ('galet',       'NEI',     'Neige',           null,          '#F4F0E8',   0, 4, true,   1),
-    ('galet',       'LIN',     'Lin',             null,          '#D8CDBB',   0, 3, false,  2),
-    ('galet',       'CAR',     'Caramel',         null,          '#B07A4F', 200, 2, false,  3),
+    ('meandre',     '180',     '180 cm',          null,          null,        0, 4, false,  1),
+    ('meandre',     '210',     '210 cm',          null,          null,      300, 4, false,  2),
+    ('meandre',     '240',     '240 cm',          null,          null,      600, 5, true,   3),
+    ('petale',      'CRE',     'Crème',           null,          '#F1E9DC',   0, 8, true,   1),
+    ('galet',       'NEI',     'Neige',           null,          '#F4F0E8',   0, 6, true,   1),
     ('nuage',       'CAN-IVO', 'Canapé 190 cm',   'Ivoire',      '#F3EEE4', 900, 5, true,   1),
     ('nuage',       'CAN-NOI', 'Canapé 190 cm',   'Noir encre',  '#1E1D1C', 900, 3, false,  2),
     ('nuage',       'FAU-IVO', 'Fauteuil 110 cm', 'Ivoire',      '#F3EEE4',   0, 6, false,  3),

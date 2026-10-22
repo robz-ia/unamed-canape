@@ -92,6 +92,7 @@ create table public.categories (
   slug         text not null unique,
   name         text not null,
   description  text,
+  cover_url    text,
   position     smallint not null default 0
 );
 
@@ -127,6 +128,16 @@ create trigger products_updated_at before update on public.products
 
 -- Une photo peut être propre à une valeur d'option (ex. option1 = 'Une place') :
 -- elle n'apparaît que lorsque cette valeur est choisie. NULL = photo commune.
+-- Appartenance d'un produit à une catégorie (n-n). option1 = configuration concernée :
+-- Nuage est dans « Canapés » pour « Canapé 190 cm » et dans « Fauteuils » pour « Fauteuil 110 cm ».
+create table public.product_categories (
+  product_id   uuid not null references public.products (id) on delete cascade,
+  category_id  smallint not null references public.categories (id) on delete cascade,
+  option1      text,
+  primary key (product_id, category_id)
+);
+create index product_categories_category_idx on public.product_categories (category_id);
+
 create table public.product_images (
   id          uuid primary key default gen_random_uuid(),
   product_id  uuid not null references public.products (id) on delete cascade,

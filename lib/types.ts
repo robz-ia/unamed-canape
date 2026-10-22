@@ -20,7 +20,7 @@ export type ProductImage = {
   position: number;
 };
 
-export type Category = { id: number; slug: string; name: string; description: string | null };
+export type Category = { id: number; slug: string; name: string; description: string | null; cover_url: string | null };
 
 export type Product = {
   id: string;
@@ -43,6 +43,8 @@ export type Product = {
   option2_name: string | null;
   is_featured: boolean;
   category: Pick<Category, "slug" | "name"> | null;
+  memberships: { slug: string; option1: string | null }[]; // catégories où apparaît le produit
+  focus?: string | null; // configuration mise en avant dans la liste courante (ex. « Fauteuil 110 cm »)
   images: ProductImage[];
   variants: Variant[];
 };
