@@ -8,7 +8,7 @@ description: Ajoute une pièce au catalogue d'Unamed Canapé. (fiche produit ré
 ## 1. Rédiger la fiche (ton de la maison)
 
 À partir de la fiche fournisseur, produire :
-- `name` : un mot ou un nom propre français évocateur (Montaigne, Galet, Nuage…). Jamais le nom fournisseur.
+- `name` : un mot ou un nom propre français évocateur (Méandre, Galet, Nuage…). Jamais le nom fournisseur.
 - `tagline` : ≤ 7 mots, ce qu'est la pièce (« Canapé organique en laine d'agneau »).
 - `description` : 2 phrases — la forme, puis l'usage.
 - `story` : 1 phrase sur l'intention de design.

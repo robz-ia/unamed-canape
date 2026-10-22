@@ -34,9 +34,11 @@ export function ruleBasedAnswer(message: string, products: Product[]) {
 
   const pick = (slug: string) => pool.find((p) => p.slug === slug);
   let p: Product | undefined;
-  if (/dormir|lit|amis|invité|studio|convertible/.test(m)) p = pick("montaigne") ?? pick("rive-gauche");
-  else if (/chat|chien|animal|enfant/.test(m)) p = pick("alma") ?? pick("petale");
-  else if (/rond|courbe|organique|sculpt|original/.test(m)) p = pick("galet") ?? pick("petale");
+  if (/dormir|lit|amis|invité|studio|convertible/.test(m)) p = pick("rive-gauche");
+  else if (/chat|chien|animal|enfant/.test(m)) p = pick("alma") ?? pick("rive-gauche");
+  else if (/fauteuil|lecture|une place|pivot/.test(m)) p = pick("petale");
+  else if (/courbe|incurv|grand salon|spacieux/.test(m)) p = pick("meandre") ?? pick("galet");
+  else if (/rond|organique|sculpt|original/.test(m)) p = pick("galet") ?? pick("petale");
   else if (/nordique|scandinave|nuage|cocon|moelleux/.test(m)) p = pick("nuage");
   else if (/rétro|retro|vintage|70/.test(m)) p = pick("rive-gauche");
   p ??= pool[0];

@@ -13,7 +13,7 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 | Domaine | Ce qui est fait |
 |---|---|
 | Comptes clients | Inscription, connexion, déconnexion (Supabase Auth), profil modifiable, adresses enregistrées |
-| Boutique | Catalogue filtrable par univers et triable par prix, fiche produit avec galerie, coloris, stock en temps réel |
+| Boutique | Catalogue filtrable par univers et triable par prix, fiche produit avec galerie photo, **visionneuse 3D** (rotation 360°, zoom, réalité augmentée sur mobile), coloris, stock en temps réel |
 | Panier | Persistant en base (retrouvé sur tous les appareils), quantités plafonnées au stock, **historique complet** de chaque action |
 | Commande | Codes promo, livraison offerte dès 1 500 €, commande **atomique** côté base (stock décrémenté, prix figés, panier vidé) |
 | Espace client | Suivi de commande étape par étape, montant total dépensé, historique du panier |
@@ -57,6 +57,14 @@ Le dossier `.claude/skills/` contient les skills du projet, utilisés pendant le
 | `supabase-migration` | Méthode pour toute évolution de la base (modélisation, RLS, RPC). |
 | `add-product` | Rédaction et insertion d'une nouvelle pièce. |
 | `admin-kpi` | Ajout d'un indicateur au tableau de bord. |
+
+## Photos & modèles 3D
+
+- Photos : `public/products/<slug>/<n>.jpg` (issues des fiches fournisseurs, retouchées en 1600 px).
+- 3D : déposer `public/models/<slug>.glb` (idéalement < 20 Mo, textures 2K), puis
+  - l'ajouter dans `lib/models.ts` (catalogue local) ;
+  - et en base : `update products set model_url = '/models/<slug>.glb' where slug = '<slug>';`
+  La fiche produit affiche alors l'onglet « 3D · 360° » et le bouton « Voir chez moi » (AR) sur mobile.
 
 ## Installation
 
