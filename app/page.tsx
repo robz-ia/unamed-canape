@@ -11,12 +11,14 @@ import { getCategories, getProducts } from "@/lib/data";
 
 // Mur de galerie du hero : position, taille et profondeur (parallaxe) de chaque pièce.
 const FRAMES: Frame[] = [
-  { slug: "galet", name: "Galet", image: "/products/galet/2.jpg", className: "left-[-8%] top-[9%] w-[32vw] md:left-[4%] md:top-[17%] md:w-[17vw]", aspect: "aspect-[4/5]", depth: 0.9, mobile: true },
-  { slug: "nuage", name: "Nuage", image: "/products/nuage/1.jpg", className: "right-[-6%] top-[8%] w-[28vw] md:right-[5%] md:top-[12%] md:w-[14vw]", aspect: "aspect-[3/4]", depth: 0.6, mobile: true },
-  { slug: "rive-gauche", name: "Rive Gauche", image: "/products/rive-gauche/3.jpg", className: "left-[25%] top-[11%] w-[8vw]", aspect: "aspect-[4/5]", depth: 0.3 },
-  { slug: "petale", name: "Pétale", image: "/products/petale/2.jpg", className: "left-[-4%] bottom-[9%] w-[30vw] md:left-[14%] md:bottom-[9%] md:w-[11vw]", aspect: "aspect-square", depth: 0.45, mobile: true },
-  { slug: "alma", name: "Alma", image: "/products/alma/2.jpg", className: "right-[-10%] bottom-[7%] w-[44vw] md:right-[9%] md:bottom-[8%] md:w-[20vw]", aspect: "aspect-[4/3]", depth: 1, mobile: true },
-  { slug: "meandre", name: "Méandre", image: "/products/meandre/2.jpg", className: "right-[33%] bottom-[6%] w-[8.5vw]", aspect: "aspect-[3/4]", depth: 0.5 },
+  // colonne gauche (bureau) — hors de la zone du titre
+  { slug: "galet", name: "Galet", image: "/products/galet/2.jpg", className: "left-[-8%] top-[9%] w-[32vw] md:left-[3%] md:top-[15%] md:w-[14vw]", aspect: "aspect-[4/5]", depth: 0.9, mobile: true },
+  { slug: "meandre", name: "Méandre", image: "/products/meandre/2.jpg", className: "left-[19%] top-[42%] w-[7vw]", aspect: "aspect-[3/4]", depth: 0.4 },
+  { slug: "petale", name: "Pétale", image: "/products/petale/2.jpg", className: "left-[-4%] bottom-[9%] w-[30vw] md:left-[7%] md:bottom-[9%] md:w-[10vw]", aspect: "aspect-square", depth: 0.6, mobile: true },
+  // colonne droite
+  { slug: "nuage", name: "Nuage", image: "/products/nuage/1.jpg", className: "right-[-6%] top-[8%] w-[28vw] md:right-[4%] md:top-[12%] md:w-[12vw]", aspect: "aspect-[3/4]", depth: 0.7, mobile: true },
+  { slug: "rive-gauche", name: "Rive Gauche", image: "/products/rive-gauche/3.jpg", className: "right-[17%] top-[44%] w-[8vw]", aspect: "aspect-[4/5]", depth: 0.35 },
+  { slug: "alma", name: "Alma", image: "/products/alma/2.jpg", className: "right-[-10%] bottom-[7%] w-[44vw] md:right-[3%] md:bottom-[8%] md:w-[17vw]", aspect: "aspect-[4/3]", depth: 1, mobile: true },
 ];
 
 const CHAPTERS = [

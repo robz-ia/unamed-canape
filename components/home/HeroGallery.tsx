@@ -40,8 +40,8 @@ function FloatingFrame({
   scroll: MotionValue<number>;
   delay: number;
 }) {
-  const x = useTransform(mx, (v) => v * 70 * f.depth);
-  const y = useTransform(my, (v) => v * 50 * f.depth);
+  const x = useTransform(mx, (v) => v * 40 * f.depth);
+  const y = useTransform(my, (v) => v * 30 * f.depth);
   const drift = useTransform(scroll, [0, 1], [0, -320 * f.depth]);
 
   return (
@@ -136,9 +136,9 @@ export default function HeroGallery({ frames }: { frames: Frame[] }) {
         style={{ y: titleY, opacity: titleOpacity, x: tx }}
         className="relative z-10 h-full flex items-center justify-center text-center px-5 pointer-events-none"
       >
-        {/* Panneau ivoire : le texte reste lisible quand une photo passe dessous */}
+        {/* Mobile : panneau ivoire pour que le texte reste lisible au-dessus des photos. Bureau : les photos restent en marge. */}
         <motion.div
-          className="flex flex-col items-center bg-paper/80 backdrop-blur-xl px-7 py-10 sm:px-14 sm:py-14 shadow-[0_30px_80px_-40px_rgba(18,17,16,0.25)]"
+          className="flex flex-col items-center bg-paper/80 backdrop-blur-xl px-7 py-10 shadow-[0_30px_80px_-40px_rgba(18,17,16,0.25)] md:bg-transparent md:backdrop-blur-none md:shadow-none md:p-0"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: EASE, delay }}
