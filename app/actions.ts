@@ -4,10 +4,31 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
+import { findVariant } from "@/lib/data";
+import { readGuestCart, writeGuestCart } from "@/lib/guest-cart";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/lib/types";
 
 export type FormState = { error?: string; ok?: string } | undefined;
+
+const DEMO_ERROR = "Base de données non connectée (mode démo) : les comptes seront actifs une fois Supabase configuré.";
+
+// Utilisateur connecté, ou null (invité / mode démo)
+async function currentUser() {
+  if (!SUPABASE_CONFIGURED) return { supabase: null, user: null };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return { supabase, user };
+}
+
+// À la connexion : le panier invité rejoint le panier du compte
+async function mergeGuestCart(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const lines = await readGuestCart();
+  for (const l of lines) await supabase.rpc("add_to_cart", { p_variant_id: l.v, p_quantity: l.q });
+  if (lines.length) await writeGuestCart([]);
+}
 
 const safeNext = (next: FormDataEntryValue | null) => {
   const n = typeof next === "string" ? next : "";
@@ -18,17 +39,20 @@ const safeNext = (next: FormDataEntryValue | null) => {
 // Authentification
 // ---------------------------------------------------------------------
 export async function signIn(_: FormState, formData: FormData): Promise<FormState> {
+  if (!SUPABASE_CONFIGURED) return { error: DEMO_ERROR };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: String(formData.get("email")).trim(),
     password: String(formData.get("password")),
   });
   if (error) return { error: "Identifiants incorrects." };
+  await mergeGuestCart(supabase);
   revalidatePath("/", "layout");
   redirect(safeNext(formData.get("next")));
 }
 
 export async function signUp(_: FormState, formData: FormData): Promise<FormState> {
+  if (!SUPABASE_CONFIGURED) return { error: DEMO_ERROR };
   const password = String(formData.get("password"));
   if (password.length < 8) return { error: "Le mot de passe doit contenir au moins 8 caractères." };
 
@@ -45,6 +69,7 @@ export async function signUp(_: FormState, formData: FormData): Promise<FormStat
   });
   if (error) return { error: error.message.includes("registered") ? "Un compte existe déjà avec cet e-mail." : error.message };
   if (!data.session) return { ok: "Compte créé. Confirmez votre adresse e-mail pour vous connecter." };
+  await mergeGuestCart(supabase);
 
   revalidatePath("/", "layout");
   redirect(safeNext(formData.get("next")));
@@ -81,41 +106,53 @@ export async function updateProfile(_: FormState, formData: FormData): Promise<F
 // Panier
 // ---------------------------------------------------------------------
 export async function addToCart(variantId: string, quantity: number) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { needsAuth: true as const };
+  const { supabase, user } = await currentUser();
 
-  const { data, error } = await supabase.rpc("add_to_cart", { p_variant_id: variantId, p_quantity: quantity });
-  if (error) return { error: error.message };
+  if (supabase && user) {
+    const { data, error } = await supabase.rpc("add_to_cart", { p_variant_id: variantId, p_quantity: quantity });
+    if (error) return { error: error.message };
+    revalidatePath("/", "layout");
+    return { count: data as number };
+  }
+
+  // Invité : panier en cookie, mêmes règles que la base (stock, 10 max)
+  const variant = await findVariant(variantId);
+  if (!variant) return { error: "Cette configuration n'existe plus." };
+  if (variant.stock === 0) return { error: "Cette configuration est momentanément épuisée." };
+  const lines = await readGuestCart();
+  const line = lines.find((l) => l.v === variantId);
+  const qty = Math.min((line?.q ?? 0) + quantity, variant.stock, 10);
+  const next = line ? lines.map((l) => (l.v === variantId ? { ...l, q: qty } : l)) : [...lines, { v: variantId, q: qty }];
+  await writeGuestCart(next);
   revalidatePath("/", "layout");
-  return { count: data as number };
+  return { count: next.reduce((s, l) => s + l.q, 0) };
 }
 
 export async function updateCartItem(itemId: string, quantity: number) {
-  const supabase = await createClient();
-  if (quantity < 1) {
-    await supabase.from("cart_items").delete().eq("id", itemId);
+  const { supabase, user } = await currentUser();
+  if (supabase && user) {
+    if (quantity < 1) {
+      await supabase.from("cart_items").delete().eq("id", itemId);
+    } else {
+      const { data: item } = await supabase.from("cart_items").select("variant:product_variants ( stock )").eq("id", itemId).single();
+      const stock = (item?.variant as unknown as { stock: number } | null)?.stock ?? 10;
+      await supabase.from("cart_items").update({ quantity: Math.min(quantity, stock, 10) }).eq("id", itemId);
+    }
   } else {
-    const { data: item } = await supabase
-      .from("cart_items")
-      .select("variant:product_variants ( stock )")
-      .eq("id", itemId)
-      .single();
-    const stock = (item?.variant as unknown as { stock: number } | null)?.stock ?? 10;
-    await supabase
-      .from("cart_items")
-      .update({ quantity: Math.min(quantity, stock, 10) })
-      .eq("id", itemId);
+    // Invité : l'identifiant de ligne est celui de la variante
+    const variant = await findVariant(itemId);
+    const lines = await readGuestCart();
+    await writeGuestCart(
+      quantity < 1 || !variant
+        ? lines.filter((l) => l.v !== itemId)
+        : lines.map((l) => (l.v === itemId ? { ...l, q: Math.min(quantity, variant.stock, 10) } : l))
+    );
   }
   revalidatePath("/", "layout");
 }
 
 export async function removeCartItem(itemId: string) {
-  const supabase = await createClient();
-  await supabase.from("cart_items").delete().eq("id", itemId);
-  revalidatePath("/", "layout");
+  return updateCartItem(itemId, 0);
 }
 
 export async function checkCoupon(code: string, subtotal: number) {

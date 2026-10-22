@@ -16,14 +16,7 @@ export default async function Panier() {
     <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-32 md:pt-40">
       <h1 className="display text-5xl md:text-7xl">Votre panier</h1>
 
-      {!user ? (
-        <div className="mt-16 py-24 text-center border-y border-line">
-          <p className="text-stone">Connectez-vous pour retrouver votre panier, sur tous vos appareils.</p>
-          <Link href="/connexion?next=/panier" className="btn btn-solid mt-8">
-            Se connecter
-          </Link>
-        </div>
-      ) : lines.length === 0 ? (
+      {lines.length === 0 ? (
         <div className="mt-16 py-24 text-center border-y border-line">
           <p className="text-stone">Votre panier est vide pour l&apos;instant.</p>
           <Link href="/boutique" className="btn btn-ghost mt-8">
@@ -54,13 +47,24 @@ export default async function Panier() {
               </div>
             </dl>
             <p className="text-xs text-stone mt-3">Code promo applicable à l&apos;étape suivante.</p>
-            <Link href="/commande" className="btn btn-solid w-full mt-8">
-              Passer commande
-            </Link>
+            {user ? (
+              <Link href="/commande" className="btn btn-solid w-full mt-8">
+                Passer commande
+              </Link>
+            ) : (
+              <>
+                <Link href="/connexion?next=/commande" className="btn btn-solid w-full mt-8">
+                  Commander
+                </Link>
+                <p className="text-xs text-stone mt-3 leading-relaxed">
+                  Connectez-vous ou créez votre compte à l&apos;étape suivante : votre panier vous suit.
+                </p>
+              </>
+            )}
             <ul className="mt-8 space-y-2 text-xs text-stone">
               <li>— Paiement sécurisé, 3 fois sans frais</li>
               <li>— Retours gratuits sous 30 jours</li>
-              <li>— Panier sauvegardé sur votre compte</li>
+              <li>— {user ? "Panier sauvegardé sur votre compte" : "Panier conservé 30 jours sur cet appareil"}</li>
             </ul>
           </aside>
         </div>
