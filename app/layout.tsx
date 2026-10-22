@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Jost, Playfair_Display } from "next/font/google";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import Cursor from "@/components/motion/Cursor";
 import Preloader from "@/components/motion/Preloader";
 import SmoothScroll from "@/components/motion/SmoothScroll";
 import "./globals.css";
@@ -34,7 +33,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-dvh flex flex-col">
         <SmoothScroll>
           <Preloader />
-          <Cursor />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />

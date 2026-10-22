@@ -48,9 +48,8 @@ Le luxe est lent et précis : courbe `EASE = [0.22, 1, 0.36, 1]`, durées 0,9 �
 | `ParallaxImage` | Grandes images : rideau qui s'ouvre puis parallaxe. |
 | `ScrollText` | Manifeste : le texte s'allume mot à mot au défilement. |
 | `Counter` | Chiffres clés qui défilent. |
-| `data-cursor="Voir"` | Sur un lien : le curseur devient une pastille avec ce mot. |
 
-Règles : jamais de `transform`/`filter` sur un conteneur de page (casse `fixed`/`sticky`) — utiliser un portail. Toujours vérifier `prefers-reduced-motion`. Aucun bandeau promotionnel en haut de page.
+Règles : jamais de `transform`/`filter` sur un conteneur de page (casse `fixed`/`sticky`) — utiliser un portail. Toujours vérifier `prefers-reduced-motion`. Aucun bandeau promotionnel en haut de page, aucun curseur personnalisé, aucun défilement détourné (pas de section épinglée qui transforme le scroll vertical en horizontal) : les carrousels se pilotent à la main (swipe, glisser, flèches).
 
 ## Mise en page
 

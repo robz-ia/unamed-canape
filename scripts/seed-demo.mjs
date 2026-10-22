@@ -18,7 +18,7 @@ const daysAgo = (d) => new Date(Date.now() - d * 864e5 - rand(864e5)).toISOStrin
 
 const { data: variants, error } = await supabase
   .from("product_variants")
-  .select("id, color_name, fabric, price_delta, product:products ( id, name, base_price, images:product_images ( url, position ) )");
+  .select("id, option1, option2, price_delta, product:products ( id, name, base_price, images:product_images ( url, position ) )");
 if (error) throw error;
 
 // 1. Clients de démonstration
@@ -79,7 +79,7 @@ for (let i = 0; i < 46; i++) {
       product_id: v.product.id,
       variant_id: v.id,
       product_name: v.product.name,
-      variant_label: `${v.color_name} · ${v.fabric}`,
+      variant_label: v.option2 ? `${v.option1} · ${v.option2}` : v.option1,
       image_url: v.product.images.sort((a, b) => a.position - b.position)[0]?.url,
       unit_price: Number(v.product.base_price) + Number(v.price_delta),
       quantity: 1,

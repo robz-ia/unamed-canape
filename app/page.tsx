@@ -1,17 +1,23 @@
 import Link from "next/link";
 import CategoryList from "@/components/home/CategoryList";
 import Counter from "@/components/home/Counter";
-import HeroShowroom from "@/components/home/HeroShowroom";
-import HorizontalCollection from "@/components/home/HorizontalCollection";
+import CollectionCarousel from "@/components/home/CollectionCarousel";
+import HeroGallery, { type Frame } from "@/components/home/HeroGallery";
 import StickyChapters from "@/components/home/StickyChapters";
-import ParallaxImage from "@/components/motion/ParallaxImage";
 import Reveal from "@/components/motion/Reveal";
 import ScrollText from "@/components/motion/ScrollText";
 import SplitReveal from "@/components/motion/SplitReveal";
 import { getCategories, getProducts } from "@/lib/data";
 
-// Pièces dont la couverture est détourée sur fond blanc : elles passent dans le hero.
-const HERO = ["galet", "alma", "rive-gauche", "petale"];
+// Mur de galerie du hero : position, taille et profondeur (parallaxe) de chaque pièce.
+const FRAMES: Frame[] = [
+  { slug: "galet", name: "Galet", image: "/products/galet/2.jpg", className: "left-[-8%] top-[9%] w-[32vw] md:left-[4%] md:top-[17%] md:w-[17vw]", aspect: "aspect-[4/5]", depth: 0.9, mobile: true },
+  { slug: "nuage", name: "Nuage", image: "/products/nuage/1.jpg", className: "right-[-6%] top-[8%] w-[28vw] md:right-[5%] md:top-[12%] md:w-[14vw]", aspect: "aspect-[3/4]", depth: 0.6, mobile: true },
+  { slug: "rive-gauche", name: "Rive Gauche", image: "/products/rive-gauche/3.jpg", className: "left-[25%] top-[11%] w-[8vw]", aspect: "aspect-[4/5]", depth: 0.3 },
+  { slug: "petale", name: "Pétale", image: "/products/petale/2.jpg", className: "left-[-4%] bottom-[9%] w-[30vw] md:left-[14%] md:bottom-[9%] md:w-[11vw]", aspect: "aspect-square", depth: 0.45, mobile: true },
+  { slug: "alma", name: "Alma", image: "/products/alma/2.jpg", className: "right-[-10%] bottom-[7%] w-[44vw] md:right-[9%] md:bottom-[8%] md:w-[20vw]", aspect: "aspect-[4/3]", depth: 1, mobile: true },
+  { slug: "meandre", name: "Méandre", image: "/products/meandre/2.jpg", className: "right-[33%] bottom-[6%] w-[8.5vw]", aspect: "aspect-[3/4]", depth: 0.5 },
+];
 
 const CHAPTERS = [
   {
@@ -34,10 +40,6 @@ const CHAPTERS = [
 export default async function Home() {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);
 
-  const slides = HERO.map((slug) => products.find((p) => p.slug === slug))
-    .filter((p) => !!p)
-    .map((p) => ({ slug: p.slug, name: p.name, tagline: p.tagline, image: p.images[0].url }));
-
   const universes = categories.map((c) => {
     const inCat = products.filter((p) => p.category?.slug === c.slug);
     return {
@@ -51,7 +53,7 @@ export default async function Home() {
 
   return (
     <>
-      <HeroShowroom slides={slides} />
+      <HeroGallery frames={FRAMES} />
 
       {/* Manifeste */}
       <section className="mx-auto max-w-[1600px] px-5 md:px-10 py-40 md:py-56">
@@ -62,30 +64,10 @@ export default async function Home() {
         />
       </section>
 
-      <HorizontalCollection products={products} />
-
-      {/* Plein cadre */}
-      <section className="mt-40 px-5 md:px-10">
-        <ParallaxImage src="/products/alma/2.jpg" alt="Le canapé Alma en chénille crème dans un salon" className="h-[80vh] md:h-[110vh]" strength={12} />
-        <div className="mx-auto max-w-[1600px] grid md:grid-cols-2 gap-10 mt-12">
-          <Reveal>
-            <p className="eyebrow text-stone">Pièce du moment</p>
-            <p className="display text-5xl md:text-6xl mt-4">Alma</p>
-          </Reveal>
-          <Reveal delay={0.15} className="md:pt-8">
-            <p className="text-stone leading-relaxed max-w-md">
-              Des coussins boudinés en chénille, 50 cm de profondeur d&apos;assise, et une longueur qui se compose de
-              180 à 390 cm. La pièce que l&apos;on garde vingt ans.
-            </p>
-            <Link href="/produit/alma" className="btn btn-ghost mt-8">
-              Découvrir Alma
-            </Link>
-          </Reveal>
-        </div>
-      </section>
+      <CollectionCarousel products={products} />
 
       {/* Chapitres */}
-      <div className="mt-40">
+      <div className="mt-16">
         <StickyChapters chapters={CHAPTERS} />
       </div>
 
@@ -119,20 +101,20 @@ export default async function Home() {
 
       {/* Concierge */}
       <section className="mt-40 bg-ink text-paper">
-        <div className="mx-auto max-w-[1600px] px-5 md:px-10 py-32 md:py-44 grid lg:grid-cols-[1.4fr_1fr] gap-16 items-end">
-          <div>
+        <div className="mx-auto max-w-[1100px] px-5 md:px-10 py-32 md:py-44 flex flex-col items-center text-center">
+          <Reveal>
             <p className="eyebrow text-paper/40">Le Concierge</p>
-            <SplitReveal
-              text="Décrivez votre pièce. *Nous trouvons la vôtre.*"
-              className="display text-5xl md:text-7xl lg:text-8xl mt-6 leading-[0.95]"
-            />
-          </div>
-          <Reveal delay={0.2}>
-            <p className="text-paper/60 leading-relaxed max-w-md">
-              Surface, habitudes, animaux, budget : notre conseiller connaît chaque pièce, chaque coloris et chaque
+          </Reveal>
+          <SplitReveal
+            text="Décrivez votre pièce. *Nous trouvons la vôtre.*"
+            className="display text-5xl md:text-7xl lg:text-8xl mt-8 leading-[0.98]"
+          />
+          <Reveal delay={0.2} className="flex flex-col items-center">
+            <p className="text-paper/60 leading-relaxed max-w-xl mt-10">
+              Surface, habitudes, animaux, budget : notre conseiller connaît chaque pièce, chaque configuration et chaque
               stock en temps réel. Il vous oriente vers la bonne, avec les bonnes dimensions.
             </p>
-            <Link href="/concierge" className="btn btn-light mt-10">
+            <Link href="/concierge" className="btn btn-light mt-12">
               Être conseillé
             </Link>
           </Reveal>

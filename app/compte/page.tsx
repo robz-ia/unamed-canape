@@ -25,7 +25,7 @@ export default async function Compte() {
       .order("created_at", { ascending: false }),
     supabase
       .from("cart_events")
-      .select("id, event, quantity, created_at, variant:product_variants ( color_name, product:products ( name, slug ) )")
+      .select("id, event, quantity, created_at, variant:product_variants ( option1, option2, product:products ( name, slug ) )")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(12),
@@ -131,12 +131,12 @@ export default async function Compte() {
             <h2 className="display text-3xl">Historique du panier</h2>
             <ul className="mt-4 text-sm divide-y divide-line">
               {events?.map((e) => {
-                const v = e.variant as unknown as { color_name: string; product: { name: string; slug: string } } | null;
+                const v = e.variant as unknown as { option1: string; option2: string | null; product: { name: string; slug: string } } | null;
                 return (
                   <li key={e.id} className="py-3 flex justify-between gap-4">
                     <span>
                       <span className="eyebrow !text-[0.6rem] text-stone mr-2">{EVENT_LABEL[e.event as keyof typeof EVENT_LABEL]}</span>
-                      {v ? <Link href={`/produit/${v.product.slug}`}>{v.product.name} · {v.color_name}</Link> : "Pièce retirée"}
+                      {v ? <Link href={`/produit/${v.product.slug}`}>{v.product.name} · {v.option2 ? `${v.option1} · ${v.option2}` : v.option1}</Link> : "Pièce retirée"}
                       {e.event !== "remove" && <span className="text-stone"> × {e.quantity}</span>}
                     </span>
                     <span className="text-stone shrink-0">{shortDate(e.created_at)}</span>

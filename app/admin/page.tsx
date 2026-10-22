@@ -13,7 +13,7 @@ type Kpis = {
   top_products: { name: string; units: number; revenue: number }[];
   most_viewed: { name: string; views: number }[];
   orders_by_status: Partial<Record<OrderStatus, number>>;
-  low_stock: { name: string; color_name: string; sku: string; stock: number }[];
+  low_stock: { name: string; label: string; sku: string; stock: number }[];
   recent_orders: { id: string; order_number: string; status: OrderStatus; total: number; created_at: string; customer: string }[];
 };
 
@@ -158,7 +158,7 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
             <ul className="text-sm divide-y divide-line border-y border-line">
               {k.low_stock.map((v) => (
                 <li key={v.sku} className="py-3 flex justify-between">
-                  <span>{v.name} <span className="text-stone">· {v.color_name}</span></span>
+                  <span>{v.name} <span className="text-stone">· {v.label}</span></span>
                   <span className={v.stock === 0 ? "text-danger" : ""}>{v.stock === 0 ? "Épuisé" : v.stock}</span>
                 </li>
               ))}

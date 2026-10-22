@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Product } from "@/lib/types";
+import { fromPrice, variantLabel } from "@/lib/variants";
 
 // Le skill Claude Code sert aussi de prompt système en production : une seule source de vérité.
 const SKILL_PATH = path.join(process.cwd(), ".claude/skills/concierge-canape/SKILL.md");
@@ -14,12 +15,12 @@ export function catalogueForPrompt(products: Product[]) {
   return products
     .map((p) =>
       [
-        `- ${p.name} (/produit/${p.slug}) — ${p.category?.name} — ${p.base_price} €`,
+        `- ${p.name} (/produit/${p.slug}) — ${p.category?.name} — à partir de ${fromPrice(p)} €`,
         `  ${p.tagline}. L${p.width_cm} × P${p.depth_cm} × H${p.height_cm} cm, ${p.seats} places.`,
         `  Matières : ${p.materials}. Délai : ${p.lead_time_weeks} semaines.`,
-        `  Coloris : ${p.variants
-          .map((v) => `${v.color_name} (${v.fabric}${v.price_delta ? `, +${v.price_delta} €` : ""}, stock ${v.stock})`)
-          .join(", ")}`,
+        `  Configurations (${[p.option1_name, p.option2_name].filter(Boolean).join(" / ")}) : ${p.variants
+          .map((v) => `${variantLabel(v)} = ${p.base_price + v.price_delta} € (stock ${v.stock})`)
+          .join(" ; ")}`,
       ].join("\n")
     )
     .join("\n");
@@ -29,7 +30,7 @@ export function catalogueForPrompt(products: Product[]) {
 export function ruleBasedAnswer(message: string, products: Product[]) {
   const m = message.toLowerCase();
   const budget = Number((m.match(/(\d[\d\s.]{2,})\s*(?:€|euros?)/)?.[1] ?? "").replace(/[\s.]/g, "")) || Infinity;
-  let pool = products.filter((p) => p.base_price <= budget);
+  let pool = products.filter((p) => fromPrice(p) <= budget);
   if (!pool.length) pool = [...products].sort((a, b) => a.base_price - b.base_price).slice(0, 1);
 
   const pick = (slug: string) => pool.find((p) => p.slug === slug);
@@ -43,6 +44,6 @@ export function ruleBasedAnswer(message: string, products: Product[]) {
   else if (/rétro|retro|vintage|70/.test(m)) p = pick("rive-gauche");
   p ??= pool[0];
 
-  const over = budget !== Infinity && p.base_price > budget;
-  return `${over ? "Votre budget est un peu juste pour notre collection ; la pièce la plus proche est" : "Je vous orienterais vers"} le ${p.name} : ${p.tagline.toLowerCase()}, ${p.width_cm} cm de large, à partir de ${p.base_price} €. Dites-moi la largeur du mur disponible et si vous avez des animaux, je vous conseillerai le bon coloris. [${p.name}](/produit/${p.slug})`;
+  const over = budget !== Infinity && fromPrice(p) > budget;
+  return `${over ? "Votre budget est un peu juste pour notre collection ; la pièce la plus proche est" : "Je vous orienterais vers"} le ${p.name} : ${p.tagline.toLowerCase()}, ${p.width_cm} cm de large, à partir de ${fromPrice(p)} €. Dites-moi la largeur du mur disponible et si vous avez des animaux, je vous conseillerai le bon coloris. [${p.name}](/produit/${p.slug})`;
 }

@@ -33,7 +33,7 @@ auth.users ─1:1─ profiles ─┬─< addresses
                            │          └─< order_status_history
                            └─< concierge_messages
 categories ─< products ─┬─< product_images
-                        ├─< product_variants (coloris + stock)
+                        ├─< product_variants (combinaisons d'options + stock)
                         └─< product_views
 coupons ─< orders            newsletter_subscribers
 ```
@@ -61,9 +61,10 @@ Le dossier `.claude/skills/` contient les skills du projet, utilisés pendant le
 ## Expérience & animations
 
 - Intro animée à la première visite, défilement inertiel (Lenis), transitions de page.
-- Hero « showroom » : les pièces détourées défilent derrière le titre, parallaxe au scroll.
-- Collection en défilement horizontal épinglé, récit en chapitres à image fixe, texte qui s'allume au fil du scroll.
-- Menu plein écran avec aperçu photo, curseur « Voir » sur les pièces, panneau panier coulissant.
+- Hero « mur de galerie » : titre centré, les pièces flottent autour en parallaxe (souris et défilement).
+- Carrousel de la collection piloté à la main (swipe, glisser, flèches), récit en chapitres à image fixe, texte qui s'allume au fil du scroll.
+- Menu plein écran avec aperçu photo, panneau panier coulissant.
+- Fiche produit à options (format, longueur, coloris, garnissage) : chaque option a ses photos et son prix.
 - Respecte `prefers-reduced-motion`. Animations : `motion` ; composants dans `components/motion/`.
 
 ## Installation

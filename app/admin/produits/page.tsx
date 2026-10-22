@@ -8,7 +8,7 @@ export default async function AdminProducts() {
   const [{ data: products }, { data: sales }] = await Promise.all([
     supabase
       .from("products")
-      .select("id, slug, name, base_price, is_active, is_featured, category:categories ( name ), variants:product_variants ( id, sku, color_name, color_hex, stock, price_delta, position )")
+      .select("id, slug, name, base_price, is_active, is_featured, category:categories ( name ), variants:product_variants ( id, sku, option1, option2, swatch_hex, stock, price_delta, position )")
       .order("name"),
     supabase.from("order_items").select("product_id, quantity, line_total"),
   ]);
@@ -44,8 +44,8 @@ export default async function AdminProducts() {
                 {[...p.variants].sort((a, b) => a.position - b.position).map((v) => (
                   <div key={v.id} className="flex items-center justify-between gap-3 bg-ivory px-4 py-3">
                     <span className="flex items-center gap-2 text-sm">
-                      <span className="size-3 rounded-full border border-line" style={{ background: v.color_hex }} />
-                      {v.color_name}
+                      {v.swatch_hex && <span className="size-3 rounded-full border border-line" style={{ background: v.swatch_hex }} />}
+                      {v.option2 ? `${v.option1} · ${v.option2}` : v.option1}
                       <span className="text-xs text-stone">{v.sku}</span>
                     </span>
                     <StockInput variantId={v.id} stock={v.stock} />

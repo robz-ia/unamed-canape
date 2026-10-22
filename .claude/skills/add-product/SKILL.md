@@ -21,25 +21,34 @@ description: Ajoute une pièce au catalogue d'Unamed Canapé. (fiche produit ré
 
 `public/products/<slug>/1.jpg`, `2.jpg`, `3.jpg` (face, trois-quarts, détail matière), JPG ≤ 300 Ko, format portrait 4:5 de préférence. Sans image, le site affiche un dessin au trait : rien ne casse.
 
-## 3. Insérer en base
+## 3. Options et variantes (modèle à deux options, façon Shopify)
 
-Ajouter le produit à `supabase/seed.sql` (pour pouvoir rejouer) ET exécuter dans le SQL Editor le bloc correspondant :
+- Chaque produit déclare `option1_name` (ex. « Format », « Longueur », « Coloris ») et éventuellement `option2_name`.
+- Chaque **variante** = une combinaison (`option1`, `option2`) avec son `sku`, son `stock`, son `price_delta` (≥ 0) et, si l'option est un coloris, sa `swatch_hex`.
+- `base_price` = prix de la configuration la moins chère ; une seule variante `is_default = true` (affichée à l'arrivée sur la fiche).
+- Chaque **photo** peut être liée à une valeur d'option (`option1` / `option2`) : elle n'apparaît que si cette valeur est choisie. `null` = photo commune. `on_white = true` pour une photo sur fond blanc (détourage, schéma).
+
+Exemple réel — Rive Gauche : Format (Une place / Deux places) × Garnissage (Mousse / Latex), défaut « Deux places · Mousse » ; les photos du une place n'apparaissent qu'après clic sur « Une place ».
+
+## 4. Insérer en base
+
+Ajouter le produit à `supabase/seed.sql` ET à `lib/catalog.ts` (catalogue de secours), puis exécuter dans le SQL Editor :
 
 ```sql
 with p as (
   insert into public.products (slug, name, tagline, description, story, category_id, base_price,
-    width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame, lead_time_weeks)
+    width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame, lead_time_weeks, option1_name, option2_name)
   values ('slug', 'Nom', '…', '…', '…', (select id from public.categories where slug = 'canapes'), 1990,
-    220, 95, 80, 43, 3, '…', '…', 6)
+    220, 95, 80, 43, 3, '…', '…', 6, 'Format', 'Coloris')
   returning id, slug
 ), imgs as (
-  insert into public.product_images (product_id, url, alt, position)
-  select id, '/products/' || slug || '/' || n || '.jpg', 'Nom — vue ' || n, n from p, generate_series(1, 3) n
+  insert into public.product_images (product_id, url, alt, option1, option2, on_white, position)
+  select id, '/products/' || slug || '/1.jpg', 'Nom — vue de face', null, 'Crème', true, 1 from p
 )
-insert into public.product_variants (product_id, sku, color_name, color_hex, fabric, price_delta, stock, position)
-select id, 'XXX-CRE', 'Crème', '#EFE6D6', 'Chénille', 0, 8, 1 from p;
+insert into public.product_variants (product_id, sku, option1, option2, swatch_hex, price_delta, stock, is_default, position)
+select id, 'XXX-2P-CRE', 'Deux places', 'Crème', '#EFE6D6', 0, 8, true, 1 from p;
 ```
 
-## 4. Vérifier
+## 5. Vérifier
 
 `/boutique` affiche la carte, `/produit/<slug>` la fiche, et le Concierge la recommande (il lit le catalogue en base à chaque requête).
