@@ -46,7 +46,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       </nav>
 
       <div className="grid lg:grid-cols-[1.25fr_1fr] gap-12 lg:gap-20">
-        <Gallery images={product.images} name={product.name} tone={product.variants[0]?.color_hex} />
+        <Gallery images={product.images} name={product.name} tone={product.variants[0]?.color_hex} modelUrl={product.model_url} />
 
         <div className="lg:sticky lg:top-36 self-start">
           <p className="eyebrow text-stone">{product.category?.name}</p>

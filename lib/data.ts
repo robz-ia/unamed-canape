@@ -6,7 +6,7 @@ import type { CartLine, Category, Product } from "@/lib/types";
 const PRODUCT_SELECT = `
   id, slug, name, tagline, description, story, base_price, compare_at_price,
   width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame,
-  lead_time_weeks, is_featured,
+  lead_time_weeks, is_featured, model_url,
   category:categories ( slug, name ),
   images:product_images ( id, url, alt, position ),
   variants:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, position )
