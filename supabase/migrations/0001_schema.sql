@@ -113,6 +113,8 @@ create table public.products (
   materials        text,
   frame            text,
   lead_time_weeks  smallint not null default 6,
+  option1_name     text not null default 'Coloris',
+  option2_name     text,
   is_featured      boolean not null default false,
   is_active        boolean not null default true,
   created_at       timestamptz not null default now(),
@@ -123,29 +125,37 @@ create index products_active_idx on public.products (is_active, is_featured);
 create trigger products_updated_at before update on public.products
   for each row execute function public.set_updated_at();
 
+-- Une photo peut être propre à une valeur d'option (ex. option1 = 'Une place') :
+-- elle n'apparaît que lorsque cette valeur est choisie. NULL = photo commune.
 create table public.product_images (
   id          uuid primary key default gen_random_uuid(),
   product_id  uuid not null references public.products (id) on delete cascade,
   url         text not null,
   alt         text not null,
+  option1     text,
+  option2     text,
+  on_white    boolean not null default false,  -- fond blanc (détourage, schéma) : posée sur l'ivoire, pas recadrée
   position    smallint not null default 0
 );
 create index product_images_product_idx on public.product_images (product_id, position);
 
--- Variantes = coloris / tissu. Le stock vit ici.
+-- Variantes = combinaison d'options (ex. « Deux places » + « Latex »). Le stock vit ici.
+-- Modèle à deux options nommées au niveau produit (option1_name, option2_name).
 create table public.product_variants (
   id           uuid primary key default gen_random_uuid(),
   product_id   uuid not null references public.products (id) on delete cascade,
   sku          text not null unique,
-  color_name   text not null,
-  color_hex    text not null check (color_hex ~ '^#[0-9A-Fa-f]{6}$'),
-  fabric       text not null,
-  price_delta  numeric(10,2) not null default 0,
+  option1      text not null,
+  option2      text,
+  swatch_hex   text check (swatch_hex ~ '^#[0-9A-Fa-f]{6}$'),  -- pastille si l'option est un coloris
+  price_delta  numeric(10,2) not null default 0 check (price_delta >= 0),
   stock        integer not null default 0 check (stock >= 0),
-  image_position smallint,          -- photo de la galerie qui montre ce coloris
+  is_default   boolean not null default false,
   position     smallint not null default 0,
-  unique (product_id, color_name)
+  unique nulls not distinct (product_id, option1, option2)
 );
+-- une seule variante par défaut par produit
+create unique index product_variants_one_default on public.product_variants (product_id) where is_default;
 create index product_variants_product_idx on public.product_variants (product_id);
 
 -- ---------------------------------------------------------------------

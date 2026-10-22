@@ -112,7 +112,7 @@ begin
 
   -- Verrou + contrôle de stock
   for r in
-    select ci.quantity, v.id as variant_id, v.stock, v.color_name, p.name
+    select ci.quantity, v.id as variant_id, v.stock, v.option1 || coalesce(' · ' || v.option2, '') as label, p.name
       from cart_items ci
       join product_variants v on v.id = ci.variant_id
       join products p on p.id = v.product_id
@@ -120,7 +120,7 @@ begin
        for update of v
   loop
     if r.stock < r.quantity then
-      raise exception 'Stock insuffisant pour % — %', r.name, r.color_name;
+      raise exception 'Stock insuffisant pour % — %', r.name, r.label;
     end if;
   end loop;
 
@@ -146,8 +146,12 @@ begin
   returning id into v_order;
 
   insert into order_items (order_id, product_id, variant_id, product_name, variant_label, image_url, unit_price, quantity)
-  select v_order, p.id, v.id, p.name, v.color_name || ' · ' || v.fabric,
-         (select url from product_images pi where pi.product_id = p.id order by position limit 1),
+  select v_order, p.id, v.id, p.name, v.option1 || coalesce(' · ' || v.option2, ''),
+         (select url from product_images pi
+            where pi.product_id = p.id
+              and (pi.option1 is null or pi.option1 = v.option1)
+              and (pi.option2 is null or pi.option2 = v.option2)
+            order by position limit 1),
          p.base_price + v.price_delta, ci.quantity
     from cart_items ci
     join product_variants v on v.id = ci.variant_id
@@ -242,7 +246,7 @@ begin
     ) x
   ),
   low_stock as (
-    select p.name, v.color_name, v.sku, v.stock
+    select p.name, v.option1 || coalesce(' · ' || v.option2, '') as label, v.sku, v.stock
       from product_variants v join products p on p.id = v.product_id
      where v.stock <= 3 order by v.stock, p.name limit 10
   ),

@@ -6,10 +6,10 @@ import type { CartLine, Category, Product } from "@/lib/types";
 const PRODUCT_SELECT = `
   id, slug, name, tagline, description, story, base_price, compare_at_price,
   width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame,
-  lead_time_weeks, is_featured,
+  lead_time_weeks, option1_name, option2_name, is_featured,
   category:categories ( slug, name ),
-  images:product_images ( id, url, alt, position ),
-  variants:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, image_position, position )
+  images:product_images ( id, url, alt, option1, option2, on_white, position ),
+  variants:product_variants ( id, sku, option1, option2, swatch_hex, price_delta, stock, is_default, position )
 `;
 
 function normalize(p: Product): Product {
@@ -124,8 +124,8 @@ export async function getCart() {
     .from("carts")
     .select(
       `cart_items ( id, quantity, added_at,
-        variant:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, image_position, position,
-          product:products ( id, slug, name, base_price, images:product_images ( id, url, alt, position ) ) ) )`
+        variant:product_variants ( id, sku, option1, option2, swatch_hex, price_delta, stock, is_default, position,
+          product:products ( id, slug, name, base_price, images:product_images ( id, url, alt, option1, option2, on_white, position ) ) ) )`
     )
     .eq("user_id", user.id)
     .maybeSingle();

@@ -1,16 +1,24 @@
 export type Variant = {
   id: string;
   sku: string;
-  color_name: string;
-  color_hex: string;
-  fabric: string;
+  option1: string;
+  option2: string | null;
+  swatch_hex: string | null;
   price_delta: number;
   stock: number;
-  image_position: number | null;
+  is_default: boolean;
   position: number;
 };
 
-export type ProductImage = { id: string; url: string; alt: string; position: number };
+export type ProductImage = {
+  id: string;
+  url: string;
+  alt: string;
+  option1: string | null; // photo propre à une valeur d'option (null = commune)
+  option2: string | null;
+  on_white: boolean; // fond blanc : posée sur l'ivoire, pas recadrée
+  position: number;
+};
 
 export type Category = { id: number; slug: string; name: string; description: string | null };
 
@@ -31,6 +39,8 @@ export type Product = {
   materials: string | null;
   frame: string | null;
   lead_time_weeks: number;
+  option1_name: string;
+  option2_name: string | null;
   is_featured: boolean;
   category: Pick<Category, "slug" | "name"> | null;
   images: ProductImage[];
