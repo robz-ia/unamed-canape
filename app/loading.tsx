@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-24 flex justify-center">
-      <p className="eyebrow text-stone animate-pulse">Chargement…</p>
+    <div className="fixed top-0 inset-x-0 z-[60] h-px overflow-hidden">
+      <div className="h-full w-1/3 bg-ink animate-[loading_1.2s_cubic-bezier(0.65,0,0.35,1)_infinite]" />
     </div>
   );
 }

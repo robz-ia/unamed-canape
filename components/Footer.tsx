@@ -1,42 +1,52 @@
 import Link from "next/link";
 import NewsletterForm from "./NewsletterForm";
+import Reveal from "./motion/Reveal";
+
+const COLS = [
+  { title: "Collection", links: [["/boutique?categorie=canapes", "Canapés"], ["/boutique?categorie=convertibles", "Convertibles"], ["/boutique?categorie=sculpturales", "Pièces sculpturales"]] },
+  { title: "Maison", links: [["/maison", "Notre histoire"], ["/concierge", "Le Concierge"], ["/compte", "Mon compte"]] },
+];
 
 export default function Footer() {
   return (
-    <footer className="bg-ink text-paper mt-32">
-      <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-20 pb-10">
-        <div className="grid gap-14 lg:grid-cols-12">
-          <div className="lg:col-span-5">
-            <p className="display text-5xl md:text-6xl">
-              Unamed Canapé<span className="text-stone">.</span>
+    <footer className="bg-ink text-paper mt-40 overflow-hidden">
+      <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-24">
+        <div className="grid gap-16 lg:grid-cols-12">
+          <Reveal className="lg:col-span-5">
+            <p className="eyebrow text-paper/40">La lettre</p>
+            <p className="display text-4xl md:text-5xl mt-6 leading-[1.1]">
+              Les nouvelles pièces, <em>avant tout le monde.</em>
             </p>
-            <p className="mt-6 text-paper/60 max-w-sm text-sm leading-relaxed">
-              Des canapés de créateurs, fabriqués à la commande et livrés dans la pièce de votre choix.
-            </p>
-          </div>
-          <div className="lg:col-span-3 grid grid-cols-2 gap-8 text-sm">
-            <ul className="space-y-3">
-              <li className="eyebrow text-paper/50 mb-4">Boutique</li>
-              <li><Link href="/boutique?categorie=canapes" className="link-underline">Canapés</Link></li>
-              <li><Link href="/boutique?categorie=convertibles" className="link-underline">Convertibles</Link></li>
-              <li><Link href="/boutique?categorie=sculpturales" className="link-underline">Sculpturales</Link></li>
-            </ul>
-            <ul className="space-y-3">
-              <li className="eyebrow text-paper/50 mb-4">Maison</li>
-              <li><Link href="/maison" className="link-underline">Notre histoire</Link></li>
-              <li><Link href="/concierge" className="link-underline">Le Concierge</Link></li>
-              <li><Link href="/compte" className="link-underline">Mon compte</Link></li>
-            </ul>
-          </div>
-          <div className="lg:col-span-4">
-            <p className="eyebrow text-paper/50 mb-4">La lettre</p>
-            <p className="text-sm text-paper/70 mb-6">Nouvelles pièces, éditions limitées et ventes privées.</p>
-            <NewsletterForm dark />
+            <div className="mt-10 max-w-md">
+              <NewsletterForm dark />
+            </div>
+          </Reveal>
+          <div className="lg:col-span-4 lg:col-start-8 grid grid-cols-2 gap-8 text-sm">
+            {COLS.map((c, i) => (
+              <Reveal key={c.title} delay={0.1 * i}>
+                <p className="eyebrow text-paper/40 mb-6">{c.title}</p>
+                <ul className="space-y-3">
+                  {c.links.map(([href, label]) => (
+                    <li key={href}>
+                      <Link href={href} className="link-underline text-paper/80 hover:text-paper transition-colors">
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ))}
           </div>
         </div>
-        <div className="mt-20 pt-6 border-t border-paper/15 flex flex-col md:flex-row justify-between gap-3 text-[0.7rem] text-paper/40 eyebrow">
-          <span>© {new Date().getFullYear()} Unamed Canapé.</span>
-          <span>Projet étudiant — Next.js · Supabase · Vercel</span>
+
+        <p className="logo text-[12.4vw] leading-[0.9] mt-28 pb-[2vw] whitespace-nowrap select-none text-paper" aria-hidden>
+          Unamed Canapé<span className="text-stone">.</span>
+        </p>
+      </div>
+      <div className="border-t border-paper/10">
+        <div className="mx-auto max-w-[1600px] px-5 md:px-10 py-6 flex flex-col md:flex-row justify-between gap-3 eyebrow !text-[0.6rem] text-paper/40">
+          <span>© {new Date().getFullYear()} Unamed Canapé. — Paris</span>
+          <span>Livraison & installation offertes dès 1 500 € · Retours 30 jours</span>
         </div>
       </div>
     </footer>

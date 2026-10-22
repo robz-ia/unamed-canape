@@ -1,6 +1,6 @@
 export default function AuthShell({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-16 md:pt-24 grid lg:grid-cols-2 gap-16 items-start">
+    <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-32 md:pt-44 grid lg:grid-cols-2 gap-16 items-start">
       <div className="hidden lg:block">
         <p className="eyebrow text-stone">{eyebrow}</p>
         <p className="display text-7xl xl:text-8xl mt-6">{title}</p>

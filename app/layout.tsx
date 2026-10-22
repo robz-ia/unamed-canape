@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { Jost, Playfair_Display } from "next/font/google";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
+import Header from "@/components/Header";
+import Cursor from "@/components/motion/Cursor";
+import Preloader from "@/components/motion/Preloader";
+import SmoothScroll from "@/components/motion/SmoothScroll";
 import "./globals.css";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
-  weight: ["400", "700", "800"],
+  weight: ["400", "500", "800"],
   style: ["normal", "italic"],
 });
 
@@ -20,18 +22,23 @@ export const metadata: Metadata = {
     "Canapés de créateurs, convertibles et pièces sculpturales. Livraison et installation offertes dès 1 500 €.",
 };
 
+// Posé avant l'hydratation : évite de rejouer l'intro dans la même session.
+const INTRO_SCRIPT = `try{if(sessionStorage.getItem("uc_intro")==="1")document.documentElement.classList.add("intro-seen")}catch(e){}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={`${playfair.variable} ${jost.variable}`}>
+    <html lang="fr" className={`${playfair.variable} ${jost.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+      </head>
       <body className="min-h-dvh flex flex-col">
-        {!SUPABASE_CONFIGURED && (
-          <p className="bg-danger text-paper text-center text-xs py-2 px-4">
-            Mode démo : base Supabase non connectée (renseignez .env.local). Catalogue local affiché, comptes et panier désactivés.
-          </p>
-        )}
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <SmoothScroll>
+          <Preloader />
+          <Cursor />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </SmoothScroll>
       </body>
     </html>
   );

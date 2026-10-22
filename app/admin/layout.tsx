@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (user?.role !== "admin") notFound();
 
   return (
-    <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-10">
+    <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-28 md:pt-32">
       <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-6">
         <div>
           <p className="eyebrow text-stone">Administration</p>

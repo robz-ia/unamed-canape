@@ -19,12 +19,14 @@
   --font-display: var(--font-playfair), "Times New Roman", serif;
   --font-sans: var(--font-jost), system-ui, sans-serif;
 
-  --animate-marquee: marquee 40s linear infinite;
-  --animate-fade-up: fade-up 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scroll-cue: scroll-cue 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+  @keyframes scroll-cue {
+    0% { transform: scaleY(0); transform-origin: top; }
+    45% { transform: scaleY(1); transform-origin: top; }
+    55% { transform: scaleY(1); transform-origin: bottom; }
+    100% { transform: scaleY(0); transform-origin: bottom; }
   }
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(16px); }
@@ -38,6 +40,7 @@
     text-rendering: optimizeLegibility;
   }
   body {
+    overflow-x: clip; /* coupe les débordements sans casser position: sticky */
     background: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-sans);
@@ -63,11 +66,20 @@
   }
   .display {
     font-family: var(--font-display);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    line-height: 1.02;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
   }
   .btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -78,14 +90,27 @@
     text-transform: uppercase;
     font-weight: 500;
     border: 1px solid var(--color-ink);
-    transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+    transition: color 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
   }
-  .btn-solid {
-    background: var(--color-ink);
-    color: var(--color-paper);
+  /* Remplissage qui monte au survol */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .btn-solid:hover { background: transparent; color: var(--color-ink); }
-  .btn-ghost:hover { background: var(--color-ink); color: var(--color-paper); }
+  .btn:hover::before { transform: scaleY(1); }
+  .btn-solid { background: var(--color-ink); color: var(--color-paper); }
+  .btn-solid::before { background: var(--color-paper); }
+  .btn-solid:hover { color: var(--color-ink); }
+  .btn-ghost::before { background: var(--color-ink); }
+  .btn-ghost:hover { color: var(--color-paper); }
+  .btn-light { border-color: var(--color-paper); color: var(--color-paper); }
+  .btn-light::before { background: var(--color-paper); }
+  .btn-light:hover { color: var(--color-ink); }
   .btn:disabled { opacity: 0.4; pointer-events: none; }
 
   .field {
@@ -108,4 +133,16 @@
     transition: background-size 0.4s;
   }
   .link-underline:hover { background-size: 100% 1px; }
+}
+
+/* Intro : masquée si déjà vue dans la session (classe posée avant hydratation) */
+.intro-seen .preloader { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+@keyframes loading {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
 }

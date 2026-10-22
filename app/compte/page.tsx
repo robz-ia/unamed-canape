@@ -35,7 +35,7 @@ export default async function Compte() {
   const spent = (orders ?? []).filter((o) => o.status !== "cancelled").reduce((s, o) => s + Number(o.total), 0);
 
   return (
-    <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-16">
+    <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-32 md:pt-40">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="eyebrow text-stone">Client depuis le {date(user.created_at)}</p>

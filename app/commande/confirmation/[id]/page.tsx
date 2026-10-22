@@ -15,7 +15,7 @@ export default async function Confirmation({ params }: { params: Promise<{ id: s
   const addr = order.shipping_address as { full_name: string; line1: string; postal_code: string; city: string };
 
   return (
-    <div className="mx-auto max-w-3xl px-5 pt-24 text-center">
+    <div className="mx-auto max-w-3xl px-5 pt-40 text-center">
       <p className="eyebrow text-stone">Commande {order.order_number}</p>
       <h1 className="display text-5xl md:text-7xl mt-6">Merci.</h1>
       <p className="mt-8 text-stone leading-relaxed">

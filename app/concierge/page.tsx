@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: "Le Concierge" };
 
 export default function Concierge() {
   return (
-    <div className="mx-auto max-w-4xl px-5 md:px-10 pt-16">
+    <div className="mx-auto max-w-4xl px-5 md:px-10 pt-32 md:pt-40">
       <div className="text-center mb-12">
         <p className="eyebrow text-stone">Conseil personnalisé</p>
         <h1 className="display text-5xl md:text-7xl mt-4">Le Concierge</h1>

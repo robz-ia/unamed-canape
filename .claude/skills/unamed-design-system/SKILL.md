@@ -22,7 +22,8 @@ Jamais d'autre couleur, jamais de dégradé coloré, jamais d'ombre portée marq
 
 ## Typographie
 
-- **Titres** : classe `.display` (Playfair Display 700, interlignage 1.02). Tailles généreuses : `text-5xl md:text-7xl` pour un H1.
+- **Logo** : classe `.logo` (Playfair Display 800) + point final — façon Panache.
+- **Titres** : classe `.display` (Playfair Display 400, interlignage 1). Tailles monumentales : `text-[clamp(3.5rem,11vw,10rem)]` pour un H1 de page.
 - **Accents** : un mot en `<em className="font-normal">` italique dans un titre, pas plus.
 - **Labels, nav, boutons** : classe `.eyebrow` (11 px, capitales, `letter-spacing: .22em`).
 - **Corps** : Jost 400, `text-stone` pour les descriptions, `leading-relaxed`.
@@ -34,7 +35,22 @@ Jamais d'autre couleur, jamais de dégradé coloré, jamais d'ombre portée marq
 - Champs : `.field` (souligné, sans cadre).
 - Liens texte : `.link-underline` (soulignement animé au survol).
 - Images produit : toujours `<ProductImage />` (gère l'absence de photo avec un dessin au trait).
-- Apparition : `animate-fade-up` avec `animationDelay` échelonné de 80 ms.
+- Photo détourée (fond blanc) : `object-contain mix-blend-multiply` sur `bg-ivory` — le blanc devient ivoire.
+
+## Mouvement (`components/motion/`)
+
+Le luxe est lent et précis : courbe `EASE = [0.22, 1, 0.36, 1]`, durées 0,9 – 1,6 s, jamais de rebond.
+
+| Composant | Usage |
+|---|---|
+| `SplitReveal` | Titres : mots qui sortent d'un masque. `*mot*` = italique. `immediate` pour le haut de page. |
+| `Reveal` | Blocs : fondu + 40 px de montée à l'entrée dans l'écran. Décaler de 0,1 – 0,15 s. |
+| `ParallaxImage` | Grandes images : rideau qui s'ouvre puis parallaxe. |
+| `ScrollText` | Manifeste : le texte s'allume mot à mot au défilement. |
+| `Counter` | Chiffres clés qui défilent. |
+| `data-cursor="Voir"` | Sur un lien : le curseur devient une pastille avec ce mot. |
+
+Règles : jamais de `transform`/`filter` sur un conteneur de page (casse `fixed`/`sticky`) — utiliser un portail. Toujours vérifier `prefers-reduced-motion`. Aucun bandeau promotionnel en haut de page.
 
 ## Mise en page
 
@@ -52,6 +68,7 @@ Français, vouvoiement, phrases courtes. Pas de points d'exclamation, pas d'emoj
 
 - [ ] Uniquement des tokens de la charte
 - [ ] Un seul bouton plein par écran
+- [ ] Titres animés (`SplitReveal`), blocs révélés (`Reveal`)
 - [ ] Titres en `.display`, labels en `.eyebrow`
 - [ ] États vides et messages d'erreur rédigés
 - [ ] Rendu vérifié en 375 px et 1440 px

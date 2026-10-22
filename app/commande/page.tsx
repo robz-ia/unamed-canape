@@ -23,7 +23,7 @@ export default async function Commande() {
     .maybeSingle();
 
   return (
-    <div className="mx-auto max-w-[1440px] px-5 md:px-10 pt-16">
+    <div className="mx-auto max-w-[1600px] px-5 md:px-10 pt-32 md:pt-40">
       <h1 className="display text-5xl md:text-7xl">Commande</h1>
       <ul className="mt-8 mb-14 flex flex-wrap gap-x-8 gap-y-2 text-sm text-stone">
         {lines.map((l) => (

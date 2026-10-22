@@ -1,67 +1,81 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState } from "react";
-import ProductImage from "./ProductImage";
+import Image from "next/image";
+import { motion } from "motion/react";
+import { useLenis } from "lenis/react";
+import { useEffect, useRef, useState } from "react";
 import type { ProductImage as Img } from "@/lib/types";
 
-const Viewer3D = dynamic(() => import("./Viewer3D"), { ssr: false });
+// Photos détourées ou schémas : posés sur l'ivoire plutôt que recadrés.
+const isFlat = (img: Img) => img.position === 1 || /dimension|positions|trois vues/i.test(img.alt);
 
-type Props = { images: Img[]; name: string; tone?: string; modelUrl?: string | null };
+export const showPhoto = (n: number) => window.dispatchEvent(new CustomEvent("uc:show-photo", { detail: n }));
 
-export default function Gallery({ images, name, tone, modelUrl }: Props) {
-  const [active, setActive] = useState(0);
-  const [mode, setMode] = useState<"photo" | "3d">(modelUrl ? "3d" : "photo");
-  const list = images.length ? images : [{ id: "x", url: "", alt: name, position: 0 }];
+export default function Gallery({ images, name }: { images: Img[]; name: string }) {
+  const lenis = useLenis();
+  const carousel = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(1);
+
+  // Un coloris choisi amène sa photo à l'écran
+  useEffect(() => {
+    const go = (e: Event) => {
+      const n = (e as CustomEvent<number>).detail;
+      const el = document.getElementById(`photo-${n}`);
+      if (!el) return;
+      if (window.matchMedia("(min-width: 1024px)").matches) lenis?.scrollTo(el, { offset: -110, duration: 1.4 });
+      else carousel.current?.scrollTo({ left: (n - 1) * carousel.current.clientWidth, behavior: "smooth" });
+    };
+    window.addEventListener("uc:show-photo", go);
+    return () => window.removeEventListener("uc:show-photo", go);
+  }, [lenis]);
+
+  const frame = (img: Img, i: number, sizes: string, mobile = false) => (
+    <div key={img.id} id={mobile ? undefined : `photo-${img.position}`} className="relative aspect-[4/5] overflow-hidden bg-ivory">
+      <Image
+        src={img.url}
+        alt={img.alt}
+        fill
+        sizes={sizes}
+        priority={i === 0}
+        className={isFlat(img) ? "object-contain p-[8%] mix-blend-multiply" : "object-cover"}
+      />
+    </div>
+  );
 
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-4">
-      <div className="flex md:flex-col gap-3 overflow-x-auto md:overflow-visible">
-        {modelUrl && (
-          <button
-            onClick={() => setMode("3d")}
-            aria-label="Vue 3D"
-            className={`w-20 md:w-24 aspect-square shrink-0 border flex flex-col items-center justify-center gap-1 transition ${mode === "3d" ? "border-ink" : "border-line opacity-60 hover:opacity-100"}`}
-          >
-            <span className="display text-2xl leading-none">3D</span>
-            <span className="eyebrow !text-[0.55rem]">360°</span>
-          </button>
-        )}
-        {list.map((img, i) => (
-          <button
+    <>
+      {/* Mobile : carrousel horizontal */}
+      <div className="lg:hidden -mx-5">
+        <div
+          ref={carousel}
+          onScroll={(e) => setCurrent(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth) + 1)}
+          className="flex overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {images.map((img, i) => (
+            <div key={img.id} className="w-full shrink-0 snap-center">
+              {frame(img, i, "100vw", true)}
+            </div>
+          ))}
+        </div>
+        <p className="eyebrow !text-[0.6rem] text-stone px-5 mt-3 tabular-nums">
+          {String(current).padStart(2, "0")} / {String(images.length).padStart(2, "0")} — {name}
+        </p>
+      </div>
+
+      {/* Bureau : photos empilées, révélées au défilement */}
+      <div className="hidden lg:flex flex-col gap-5">
+        {images.map((img, i) => (
+          <motion.div
             key={img.id}
-            onClick={() => {
-              setActive(i);
-              setMode("photo");
-            }}
-            aria-label={`Vue ${i + 1}`}
-            className={`w-20 md:w-24 shrink-0 transition-opacity ${mode === "photo" && active === i ? "opacity-100 outline outline-1 outline-ink outline-offset-2" : "opacity-50 hover:opacity-100"}`}
+            initial={i === 0 ? false : { clipPath: "inset(10% 0 10% 0)", opacity: 0.4 }}
+            whileInView={{ clipPath: "inset(0% 0 0% 0)", opacity: 1 }}
+            viewport={{ once: true, margin: "0px 0px -15% 0px" }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            <ProductImage src={img.url || undefined} alt={img.alt} seed={i} tone={tone} sizes="96px" className="aspect-square" />
-          </button>
+            {frame(img, i, "55vw")}
+          </motion.div>
         ))}
       </div>
-      <div className="flex-1 aspect-square relative">
-        {mode === "3d" && modelUrl ? (
-          <Viewer3D src={modelUrl} alt={`${name} en 3D`} poster={list[0].url || undefined} />
-        ) : (
-          <ProductImage
-            key={active}
-            src={list[active].url || undefined}
-            alt={list[active].alt}
-            seed={active}
-            tone={tone}
-            priority
-            sizes="(min-width: 1024px) 55vw, 100vw"
-            className="absolute inset-0 animate-fade-up"
-          />
-        )}
-        {modelUrl && mode === "photo" && (
-          <button onClick={() => setMode("3d")} className="btn btn-solid !py-2.5 !px-5 absolute bottom-4 right-4">
-            Voir en 3D
-          </button>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
