@@ -1,9 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {
@@ -11,6 +8,10 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  // Le skill du Concierge est lu à l'exécution : on l'embarque dans la fonction serverless.
+  outputFileTracingIncludes: {
+    "/api/concierge": ["./.claude/skills/concierge-canape/**"],
   },
 };
 
