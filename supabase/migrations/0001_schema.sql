@@ -113,7 +113,6 @@ create table public.products (
   materials        text,
   frame            text,
   lead_time_weeks  smallint not null default 6,
-  model_url        text,            -- modèle 3D .glb (visionneuse 360°)
   is_featured      boolean not null default false,
   is_active        boolean not null default true,
   created_at       timestamptz not null default now(),
@@ -143,6 +142,7 @@ create table public.product_variants (
   fabric       text not null,
   price_delta  numeric(10,2) not null default 0,
   stock        integer not null default 0 check (stock >= 0),
+  image_position smallint,          -- photo de la galerie qui montre ce coloris
   position     smallint not null default 0,
   unique (product_id, color_name)
 );

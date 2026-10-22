@@ -6,6 +6,7 @@ export type Variant = {
   fabric: string;
   price_delta: number;
   stock: number;
+  image_position: number | null;
   position: number;
 };
 
@@ -31,7 +32,6 @@ export type Product = {
   frame: string | null;
   lead_time_weeks: number;
   is_featured: boolean;
-  model_url: string | null;
   category: Pick<Category, "slug" | "name"> | null;
   images: ProductImage[];
   variants: Variant[];

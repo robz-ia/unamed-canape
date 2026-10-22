@@ -6,10 +6,10 @@ import type { CartLine, Category, Product } from "@/lib/types";
 const PRODUCT_SELECT = `
   id, slug, name, tagline, description, story, base_price, compare_at_price,
   width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame,
-  lead_time_weeks, is_featured, model_url,
+  lead_time_weeks, is_featured,
   category:categories ( slug, name ),
   images:product_images ( id, url, alt, position ),
-  variants:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, position )
+  variants:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, image_position, position )
 `;
 
 function normalize(p: Product): Product {
@@ -124,7 +124,7 @@ export async function getCart() {
     .from("carts")
     .select(
       `cart_items ( id, quantity, added_at,
-        variant:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, position,
+        variant:product_variants ( id, sku, color_name, color_hex, fabric, price_delta, stock, image_position, position,
           product:products ( id, slug, name, base_price, images:product_images ( id, url, alt, position ) ) ) )`
     )
     .eq("user_id", user.id)
