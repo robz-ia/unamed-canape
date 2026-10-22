@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useLenis } from "lenis/react";
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { addToCart } from "@/app/actions";
@@ -22,6 +21,7 @@ type Props = {
   product: Product;
   header: React.ReactNode;
   details: React.ReactNode;
+  initialConfig?: string | null;
 };
 
 function OptionGroup({
@@ -40,6 +40,23 @@ function OptionGroup({
   available: (value: string) => boolean;
 }) {
   const swatches = values.every((v) => v.hex);
+  // Une seule valeur : on l'indique, sans faux choix
+  if (values.length === 1) {
+    return (
+      <div className="mt-9 flex justify-between items-center border-t border-line pt-5">
+        <p className="eyebrow">{name}</p>
+        <p className="text-sm flex items-center gap-2.5">
+          {values[0].hex && (
+            <span
+              className="size-3.5 rounded-full ring-1 ring-black/10"
+              style={{ background: values[0].hex }}
+            />
+          )}
+          {values[0].value}
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="mt-9">
       <div className="flex justify-between items-baseline">
@@ -99,17 +116,27 @@ function OptionGroup({
 }
 
 // Fiche produit : options (format, longueur, coloris…) → variante → photos et prix.
-export default function ProductExperience({ product, header, details }: Props) {
-  const initial = defaultVariant(product);
+export default function ProductExperience({
+  product,
+  header,
+  details,
+  initialConfig,
+}: Props) {
+  const initial =
+    (initialConfig &&
+      (product.variants.find(
+        (v) => v.option1 === initialConfig && v.is_default,
+      ) ??
+        product.variants.find((v) => v.option1 === initialConfig))) ||
+    defaultVariant(product);
   const [o1, setO1] = useState(initial.option1);
   const [o2, setO2] = useState<string | null>(initial.option2);
   const [qty, setQty] = useState(1);
+  const [direction, setDirection] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<{ count: number } | null>(null);
   const [portal, setPortal] = useState(false);
   const [pending, start] = useTransition();
-  const router = useRouter();
-  const pathname = usePathname();
   const lenis = useLenis();
 
   const variant =
@@ -143,8 +170,26 @@ export default function ProductExperience({ product, header, details }: Props) {
       lenis?.scrollTo(0, { duration: 1.2 });
   };
 
+  const dirFor = (
+    list: { value: string }[],
+    from: string | null,
+    to: string,
+  ) =>
+    list.findIndex((v) => v.value === to) >=
+    list.findIndex((v) => v.value === from)
+      ? 1
+      : -1;
+
   const pick1 = (value: string) => {
+    if (value === o1) return;
+    setDirection(dirFor(values1, o1, value));
     setO1(value);
+    // configuration partageable : ?config=…
+    window.history.replaceState(
+      null,
+      "",
+      `?config=${encodeURIComponent(value)}`,
+    );
     // si la combinaison n'existe pas, on prend la première disponible pour cette valeur
     if (
       !product.variants.some(
@@ -156,6 +201,8 @@ export default function ProductExperience({ product, header, details }: Props) {
     onChange();
   };
   const pick2 = (value: string) => {
+    if (value === o2) return;
+    setDirection(dirFor(values2, o2, value));
     setO2(value);
     onChange();
   };
@@ -163,7 +210,6 @@ export default function ProductExperience({ product, header, details }: Props) {
   const submit = () =>
     start(async () => {
       const res = await addToCart(variant.id, qty);
-      if ("needsAuth" in res) return router.push(`/connexion?next=${pathname}`);
       if ("error" in res) return setError(res.error!);
       setPortal(true);
       setDrawer({ count: res.count! });
@@ -171,7 +217,12 @@ export default function ProductExperience({ product, header, details }: Props) {
 
   return (
     <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-20">
-      <Gallery images={images} name={product.name} setKey={setKey} />
+      <Gallery
+        images={images}
+        name={product.name}
+        setKey={setKey}
+        direction={direction}
+      />
 
       <div className="lg:sticky lg:top-28 self-start lg:pb-10">
         {header}
@@ -324,9 +375,7 @@ export default function ProductExperience({ product, header, details }: Props) {
                     </div>
                   </div>
                   <p className="text-sm text-stone mt-10">
-                    Votre panier contient {drawer.count} article
-                    {drawer.count > 1 ? "s" : ""}. Il est sauvegardé sur votre
-                    compte.
+                    Votre panier contient {drawer.count} article{drawer.count > 1 ? "s" : ""}. Aucun compte n&apos;est nécessaire pour le constituer.
                   </p>
                   <div className="mt-auto flex flex-col gap-3">
                     <Link href="/panier" className="btn btn-solid w-full">

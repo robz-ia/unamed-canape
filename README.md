@@ -13,8 +13,8 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 | Domaine | Ce qui est fait |
 |---|---|
 | Comptes clients | Inscription, connexion, déconnexion (Supabase Auth), profil modifiable, adresses enregistrées |
-| Boutique | Catalogue filtrable par univers et triable par prix, fiche produit éditoriale (photos plein format, coloris qui affichent leur photo), stock en temps réel |
-| Panier | Persistant en base (retrouvé sur tous les appareils), quantités plafonnées au stock, **historique complet** de chaque action |
+| Boutique | Canapés / Fauteuils / Convertibles — un produit apparaît dans chaque catégorie qui le concerne (Nuage est canapé *et* fauteuil), dans la bonne configuration ; tri par prix, fiche produit éditoriale (photos plein format, coloris qui affichent leur photo), stock en temps réel |
+| Panier | **Sans compte** (cookie 30 jours), puis fusionné en base à la connexion ; quantités plafonnées au stock, **historique complet** de chaque action |
 | Commande | Codes promo, livraison offerte dès 1 500 €, commande **atomique** côté base (stock décrémenté, prix figés, panier vidé) |
 | Espace client | Suivi de commande étape par étape, montant total dépensé, historique du panier |
 | Administration | Accès réservé au rôle `admin` : KPIs (CA, commandes, panier moyen, conversion, paniers abandonnés…), graphique du CA, top ventes, stock faible, gestion des statuts de commande, du stock et de la mise en ligne |
@@ -23,7 +23,7 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 
 ## Base de données
 
-16 tables, toutes protégées par Row Level Security.
+17 tables, toutes protégées par Row Level Security.
 
 ```
 auth.users ─1:1─ profiles ─┬─< addresses
@@ -32,7 +32,7 @@ auth.users ─1:1─ profiles ─┬─< addresses
                            ├─< orders ─< order_items        (prix figés)
                            │          └─< order_status_history
                            └─< concierge_messages
-categories ─< products ─┬─< product_images
+categories ─< product_categories >─ products ─┬─< product_images
                         ├─< product_variants (combinaisons d'options + stock)
                         └─< product_views
 coupons ─< orders            newsletter_subscribers

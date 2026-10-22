@@ -14,7 +14,8 @@ description: Ajoute une pièce au catalogue d'Unamed Canapé. (fiche produit ré
 - `story` : 1 phrase sur l'intention de design.
 - Dimensions en cm, nombre de places, `materials`, `frame`, `lead_time_weeks`.
 - Prix de vente : prix fournisseur × 3 à 4, arrondi à la dizaine en 90 (1 890, 2 290…).
-- `category` : `canapes`, `convertibles` ou `sculpturales`.
+- Catégories : `canapes`, `fauteuils`, `convertibles`. Un produit est rattaché à **toutes** celles qui le concernent via `product_categories`, avec la configuration concernée (`option1`) : Nuage → canapés (« Canapé 190 cm ») et fauteuils (« Fauteuil 110 cm »).
+- **Coloris** : ne proposer que les coloris dont on a une photo.
 - 3 coloris max avec un hex réaliste, une matière, un supplément éventuel et un stock.
 
 ## 2. Images

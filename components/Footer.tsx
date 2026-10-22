@@ -3,7 +3,7 @@ import NewsletterForm from "./NewsletterForm";
 import Reveal from "./motion/Reveal";
 
 const COLS = [
-  { title: "Collection", links: [["/boutique?categorie=canapes", "Canapés"], ["/boutique?categorie=convertibles", "Convertibles"], ["/boutique?categorie=sculpturales", "Pièces sculpturales"]] },
+  { title: "Collection", links: [["/boutique?categorie=canapes", "Canapés"], ["/boutique?categorie=fauteuils", "Fauteuils"], ["/boutique?categorie=convertibles", "Convertibles"]] },
   { title: "Maison", links: [["/maison", "Notre histoire"], ["/concierge", "Le Concierge"], ["/compte", "Mon compte"]] },
 ];
 

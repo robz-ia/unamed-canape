@@ -18,7 +18,7 @@ const jost = Jost({ variable: "--font-jost", subsets: ["latin"], weight: ["300",
 export const metadata: Metadata = {
   title: { default: "Unamed Canapé. — Canapés de créateurs", template: "%s · Unamed Canapé." },
   description:
-    "Canapés de créateurs, convertibles et pièces sculpturales. Livraison et installation offertes dès 1 500 €.",
+    "Canapés, fauteuils et convertibles de créateurs. Livraison et installation offertes dès 1 500 €.",
 };
 
 // Posé avant l'hydratation : évite de rejouer l'intro dans la même session.

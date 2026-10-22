@@ -3,19 +3,20 @@ import Link from "next/link";
 import Reveal from "./motion/Reveal";
 import { price } from "@/lib/format";
 import type { Product } from "@/lib/types";
-import { coverFor, defaultVariant, fromPrice, hasPriceRange, imagesFor } from "@/lib/variants";
+import { coverFor, focusHasRange, focusPrice, focusVariant, imagesFor, productHref } from "@/lib/variants";
 
 // Carte produit : la configuration par défaut, son ambiance apparaît au survol.
 export default function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
-  const def = defaultVariant(product);
+  const def = focusVariant(product);
   const cover = coverFor(product, def);
   const mood = imagesFor(product.images, def).find((i) => i.id !== cover?.id && !i.on_white) ?? product.images.find((i) => i.id !== cover?.id && !i.on_white);
   const swatches = [...new Set(product.variants.map((v) => v.swatch_hex).filter(Boolean))] as string[];
+  const subtitle = product.focus ? `Version ${product.focus.toLowerCase()}` : product.tagline;
   const totalStock = product.variants.reduce((s, v) => s + v.stock, 0);
 
   return (
     <Reveal delay={(index % 3) * 0.12}>
-      <Link href={`/produit/${product.slug}`} className="group block">
+      <Link href={productHref(product)} className="group block">
         <div className="relative aspect-[4/5] overflow-hidden bg-ivory">
           {cover && (
             <Image
@@ -45,15 +46,15 @@ export default function ProductCard({ product, index = 0 }: { product: Product; 
         <div className="mt-6 flex items-start justify-between gap-4">
           <div>
             <h3 className="display text-3xl md:text-[2.1rem] transition-all duration-700 group-hover:italic">{product.name}</h3>
-            <p className="text-sm text-stone mt-2">{product.tagline}</p>
+            <p className="text-sm text-stone mt-2">{subtitle}</p>
           </div>
           <p className="text-sm tabular-nums shrink-0 pt-1.5">
-            {hasPriceRange(product) && <span className="text-stone">dès </span>}
-            {price(fromPrice(product))}
+            {focusHasRange(product) && <span className="text-stone">dès </span>}
+            {price(focusPrice(product))}
           </p>
         </div>
-        <div className="mt-4 flex gap-1.5">
-          {swatches.map((hex) => (
+        <div className="mt-4 flex gap-1.5 min-h-2.5">
+          {swatches.length > 1 && swatches.map((hex) => (
             <span key={hex} className="size-2.5 rounded-full ring-1 ring-line" style={{ background: hex }} />
           ))}
         </div>

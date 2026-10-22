@@ -40,16 +40,13 @@ const CHAPTERS = [
 export default async function Home() {
   const [products, categories] = await Promise.all([getProducts(), getCategories()]);
 
-  const universes = categories.map((c) => {
-    const inCat = products.filter((p) => p.category?.slug === c.slug);
-    return {
-      href: `/boutique?categorie=${c.slug}`,
-      name: c.name,
-      description: c.description,
-      count: inCat.length,
-      image: (inCat[0]?.images[1] ?? inCat[0]?.images[0])?.url ?? "/products/nuage/1.jpg",
-    };
-  });
+  const universes = categories.map((c) => ({
+    href: `/boutique?categorie=${c.slug}`,
+    name: c.name,
+    description: c.description,
+    count: products.filter((p) => p.memberships.some((m) => m.slug === c.slug)).length,
+    image: c.cover_url ?? "/products/alma/2.jpg",
+  }));
 
   return (
     <>

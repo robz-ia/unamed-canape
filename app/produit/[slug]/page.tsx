@@ -16,8 +16,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return product ? { title: product.name, description: product.tagline } : {};
 }
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ config?: string }>;
+}) {
   const { slug } = await params;
+  const { config } = await searchParams;
   const product = await getProduct(slug);
   if (!product) notFound();
 
@@ -38,6 +45,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
       <ProductExperience
         product={product}
+        initialConfig={config ?? null}
         header={
           <>
             <nav className="eyebrow !text-[0.6rem] text-stone flex gap-2">

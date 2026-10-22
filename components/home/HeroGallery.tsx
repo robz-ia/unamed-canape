@@ -2,15 +2,37 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
+import {
+  motion,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "motion/react";
 import { useRef } from "react";
 import { EASE } from "../motion/Reveal";
 import SplitReveal from "../motion/SplitReveal";
 import { useIntroDelay } from "../motion/useIntroDelay";
 
-export type Frame = { slug: string; name: string; image: string; className: string; aspect: string; depth: number; mobile?: boolean };
+export type Frame = {
+  slug: string;
+  name: string;
+  image: string;
+  className: string;
+  aspect: string;
+  depth: number;
+  mobile?: boolean;
+};
 
-function FloatingFrame({ f, i, mx, my, scroll, delay }: {
+function FloatingFrame({
+  f,
+  i,
+  mx,
+  my,
+  scroll,
+  delay,
+}: {
   f: Frame;
   i: number;
   mx: MotionValue<number>;
@@ -23,14 +45,25 @@ function FloatingFrame({ f, i, mx, my, scroll, delay }: {
   const drift = useTransform(scroll, [0, 1], [0, -320 * f.depth]);
 
   return (
-    <motion.div style={{ y: drift }} className={`absolute ${f.className} ${f.mobile ? "" : "hidden md:block"}`}>
+    <motion.div
+      style={{ y: drift }}
+      className={`absolute ${f.className} ${f.mobile ? "" : "hidden md:block"}`}
+    >
       <motion.div style={{ x, y }}>
-        <Link href={`/produit/${f.slug}`} className="group block" aria-label={f.name}>
+        <Link
+          href={`/produit/${f.slug}`}
+          className="group block"
+          aria-label={f.name}
+        >
           <motion.div
             className={`relative w-full overflow-hidden bg-ivory ${f.aspect}`}
             initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
             animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
-            transition={{ duration: 1.5, ease: [0.76, 0, 0.24, 1], delay: delay + i * 0.12 }}
+            transition={{
+              duration: 1.5,
+              ease: [0.76, 0, 0.24, 1],
+              delay: delay + i * 0.12,
+            }}
           >
             <motion.div
               className="absolute inset-0"
@@ -65,7 +98,10 @@ export default function HeroGallery({ frames }: { frames: Frame[] }) {
   const rawY = useMotionValue(0);
   const mx = useSpring(rawX, { stiffness: 60, damping: 20 });
   const my = useSpring(rawY, { stiffness: 60, damping: 20 });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
   const titleY = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
   const titleOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const tx = useTransform(mx, (v) => v * -18);
@@ -85,33 +121,64 @@ export default function HeroGallery({ frames }: { frames: Frame[] }) {
       }}
     >
       {frames.map((f, i) => (
-        <FloatingFrame key={f.slug} f={f} i={i} mx={mx} my={my} scroll={scrollYProgress} delay={delay} />
+        <FloatingFrame
+          key={f.slug}
+          f={f}
+          i={i}
+          mx={mx}
+          my={my}
+          scroll={scrollYProgress}
+          delay={delay}
+        />
       ))}
 
       <motion.div
         style={{ y: titleY, opacity: titleOpacity, x: tx }}
-        className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5 pointer-events-none"
+        className="relative z-10 h-full flex items-center justify-center text-center px-5 pointer-events-none"
       >
-        <motion.p
-          className="eyebrow text-stone hidden sm:block"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: EASE, delay: delay + 0.2 }}
-        >
-          Maison de canapés de créateurs — Paris
-        </motion.p>
-        <SplitReveal as="h1" immediate delay={delay + 0.3} text="L'art de" className="display text-[clamp(3.6rem,10vw,10.5rem)] leading-[0.92] mt-8" />
-        <SplitReveal as="p" immediate delay={delay + 0.45} text="*s'asseoir.*" className="display text-[clamp(3.6rem,10vw,10.5rem)] leading-[0.92]" />
+        {/* Panneau ivoire : le texte reste lisible quand une photo passe dessous */}
         <motion.div
-          className="mt-10 flex flex-col items-center gap-8 pointer-events-auto"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: EASE, delay: delay + 0.9 }}
+          className="flex flex-col items-center bg-paper/80 backdrop-blur-xl px-7 py-10 sm:px-14 sm:py-14 shadow-[0_30px_80px_-40px_rgba(18,17,16,0.25)]"
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: EASE, delay }}
         >
-          <p className="text-stone max-w-sm leading-relaxed">Six pièces de créateurs, fabriquées à la commande et installées chez vous.</p>
-          <Link href="/boutique" className="btn btn-ghost bg-paper/70 backdrop-blur-sm">
-            Découvrir la collection
-          </Link>
+          <motion.p
+            className="eyebrow !text-[0.6rem] sm:!text-[0.6875rem] text-stone"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: EASE, delay: delay + 0.2 }}
+          >
+            Maison de canapés de créateurs — Paris
+          </motion.p>
+          <SplitReveal
+            as="h1"
+            immediate
+            delay={delay + 0.3}
+            text="L'art de"
+            className="display text-[clamp(3.2rem,9vw,9rem)] leading-[0.92] mt-6 sm:mt-8"
+          />
+          <SplitReveal
+            as="p"
+            immediate
+            delay={delay + 0.45}
+            text="*s'asseoir.*"
+            className="display text-[clamp(3.2rem,9vw,9rem)] leading-[0.92]"
+          />
+          <motion.div
+            className="mt-8 sm:mt-10 flex flex-col items-center gap-7 pointer-events-auto"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: EASE, delay: delay + 0.9 }}
+          >
+            <p className="text-stone max-w-xs sm:max-w-sm leading-relaxed text-sm sm:text-base">
+              Six pièces de créateurs, fabriquées à la commande et installées
+              chez vous.
+            </p>
+            <Link href="/boutique" className="btn btn-ghost">
+              Découvrir la collection
+            </Link>
+          </motion.div>
         </motion.div>
       </motion.div>
 

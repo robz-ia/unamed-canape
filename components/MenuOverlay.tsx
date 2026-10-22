@@ -10,9 +10,9 @@ import { EASE } from "./motion/Reveal";
 const LINKS = [
   { href: "/boutique", label: "La collection", image: "/products/nuage/1.jpg" },
   { href: "/boutique?categorie=canapes", label: "Canapés", image: "/products/alma/2.jpg" },
-  { href: "/boutique?categorie=sculpturales", label: "Pièces sculpturales", image: "/products/galet/2.jpg" },
-  { href: "/boutique?categorie=convertibles", label: "Convertibles", image: "/products/rive-gauche/2.jpg" },
-  { href: "/concierge", label: "Le Concierge", image: "/products/petale/2.jpg" },
+  { href: "/boutique?categorie=fauteuils", label: "Fauteuils", image: "/products/petale/2.jpg" },
+  { href: "/boutique?categorie=convertibles", label: "Convertibles", image: "/products/rive-gauche/6.jpg" },
+  { href: "/concierge", label: "Le Concierge", image: "/products/galet/2.jpg" },
   { href: "/maison", label: "La maison", image: "/products/meandre/2.jpg" },
 ];
 
