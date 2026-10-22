@@ -1,11 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/env";
+import { SUPABASE_ANON_KEY, SUPABASE_CONFIGURED, SUPABASE_URL } from "@/lib/supabase/env";
 
 const PROTECTED = ["/compte", "/commande", "/admin"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (!SUPABASE_CONFIGURED) return response;
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {

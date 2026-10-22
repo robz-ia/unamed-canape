@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Jost, Playfair_Display } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -23,6 +24,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="fr" className={`${playfair.variable} ${jost.variable}`}>
       <body className="min-h-dvh flex flex-col">
+        {!SUPABASE_CONFIGURED && (
+          <p className="bg-danger text-paper text-center text-xs py-2 px-4">
+            Mode démo : base Supabase non connectée (renseignez .env.local). Catalogue local affiché, comptes et panier désactivés.
+          </p>
+        )}
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

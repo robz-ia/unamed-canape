@@ -1,3 +1,5 @@
+import { FALLBACK_CATEGORIES, FALLBACK_PRODUCTS } from "@/lib/catalog";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { CartLine, Category, Product } from "@/lib/types";
 
@@ -22,7 +24,25 @@ function normalize(p: Product): Product {
   };
 }
 
+function fallbackProducts(opts: { category?: string; sort?: string; featured?: boolean }) {
+  let list = FALLBACK_PRODUCTS.filter((p) => (!opts.featured || p.is_featured) && (!opts.category || p.category?.slug === opts.category));
+  if (opts.sort === "prix-asc") list = [...list].sort((a, b) => a.base_price - b.base_price);
+  else if (opts.sort === "prix-desc") list = [...list].sort((a, b) => b.base_price - a.base_price);
+  else list = [...list].sort((a, b) => Number(b.is_featured) - Number(a.is_featured));
+  return list;
+}
+
 export async function getProducts(opts: { category?: string; sort?: string; featured?: boolean } = {}) {
+  if (!SUPABASE_CONFIGURED) return fallbackProducts(opts);
+  try {
+    return await fetchProducts(opts);
+  } catch (error) {
+    console.error("Catalogue Supabase indisponible, catalogue local utilisé :", error);
+    return fallbackProducts(opts);
+  }
+}
+
+async function fetchProducts(opts: { category?: string; sort?: string; featured?: boolean }) {
   const supabase = await createClient();
   let query = supabase.from("products").select(PRODUCT_SELECT).eq("is_active", true);
 
@@ -42,18 +62,24 @@ export async function getProducts(opts: { category?: string; sort?: string; feat
 }
 
 export async function getProduct(slug: string) {
+  const local = () => FALLBACK_PRODUCTS.find((p) => p.slug === slug) ?? null;
+  if (!SUPABASE_CONFIGURED) return local();
   const supabase = await createClient();
-  const { data } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  const { data, error } = await supabase.from("products").select(PRODUCT_SELECT).eq("slug", slug).maybeSingle();
+  if (error) return local();
   return data ? normalize(data as unknown as Product) : null;
 }
 
 export async function getCategories() {
+  if (!SUPABASE_CONFIGURED) return FALLBACK_CATEGORIES;
   const supabase = await createClient();
-  const { data } = await supabase.from("categories").select("id, slug, name, description").order("position");
+  const { data, error } = await supabase.from("categories").select("id, slug, name, description").order("position");
+  if (error) return FALLBACK_CATEGORIES;
   return (data ?? []) as Category[];
 }
 
 export async function getUser() {
+  if (!SUPABASE_CONFIGURED) return null;
   const supabase = await createClient();
   const {
     data: { user },
@@ -76,6 +102,7 @@ export async function getUser() {
 }
 
 export async function getCartCount() {
+  if (!SUPABASE_CONFIGURED) return 0;
   const supabase = await createClient();
   const {
     data: { user },
@@ -87,6 +114,7 @@ export async function getCartCount() {
 }
 
 export async function getCart() {
+  if (!SUPABASE_CONFIGURED) return [];
   const supabase = await createClient();
   const {
     data: { user },

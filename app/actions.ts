@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/lib/types";
 
@@ -174,6 +175,7 @@ async function sessionId() {
 }
 
 export async function logProductView(productId: string) {
+  if (!SUPABASE_CONFIGURED) return;
   const supabase = await createClient();
   const {
     data: { user },

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SofaArt from "./SofaArt";
 
 type Props = {
@@ -16,6 +16,13 @@ type Props = {
 
 export default function ProductImage({ src, alt, seed = 0, tone, priority, sizes = "50vw", className = "" }: Props) {
   const [failed, setFailed] = useState(!src);
+  const ref = useRef<HTMLImageElement>(null);
+
+  // L'erreur peut survenir avant l'hydratation : on revérifie l'image au montage.
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth === 0) setFailed(true);
+  }, []);
   return (
     <div className={`relative overflow-hidden bg-ivory ${className}`}>
       {failed ? (
@@ -24,6 +31,7 @@ export default function ProductImage({ src, alt, seed = 0, tone, priority, sizes
         </div>
       ) : (
         <Image
+          ref={ref}
           src={src!}
           alt={alt}
           fill

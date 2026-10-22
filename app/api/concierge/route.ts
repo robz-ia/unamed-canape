@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { cookies } from "next/headers";
 import { getProducts } from "@/lib/data";
 import { catalogueForPrompt, loadSkill, ruleBasedAnswer } from "@/lib/concierge";
+import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 type Turn = { role: "user" | "assistant"; content: string };
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
   } else {
     reply = ruleBasedAnswer(last.content, products);
   }
+
+  if (!SUPABASE_CONFIGURED) return Response.json({ reply, mode });
 
   // Journalisation des échanges (analyse des besoins clients côté admin)
   const supabase = await createClient();
