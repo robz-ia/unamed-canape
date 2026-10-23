@@ -8,7 +8,7 @@ const PRODUCT_SELECT = `
   id, slug, name, tagline, description, story, base_price, compare_at_price,
   width_cm, depth_cm, height_cm, seat_height_cm, seats, materials, frame,
   lead_time_weeks, option1_name, option2_name, is_featured,
-  category:categories ( slug, name ),
+  category:categories!products_category_id_fkey ( slug, name ),
   memberships:product_categories ( option1, category:categories ( slug ) ),
   images:product_images ( id, url, alt, option1, option2, on_white, position ),
   variants:product_variants ( id, sku, option1, option2, swatch_hex, price_delta, stock, is_default, position )
@@ -115,8 +115,16 @@ export async function getUser() {
   } | null;
 }
 
+// Lignes du cookie qui existent encore dans le catalogue (les autres sont ignorées)
+export async function validGuestLines() {
+  const lines = await readGuestCart();
+  if (!lines.length) return lines;
+  const ids = new Set((await getProducts()).flatMap((p) => p.variants.map((v) => v.id)));
+  return lines.filter((l) => ids.has(l.v));
+}
+
 export async function getCartCount() {
-  const guest = async () => (await readGuestCart()).reduce((s, l) => s + l.q, 0);
+  const guest = async () => (await validGuestLines()).reduce((s, l) => s + l.q, 0);
   if (!SUPABASE_CONFIGURED) return guest();
   const supabase = await createClient();
   const {

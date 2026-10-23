@@ -111,3 +111,13 @@ await supabase
   .from("newsletter_subscribers")
   .upsert(Array.from({ length: 64 }, (_, i) => ({ email: `lettre${i}@exemple.fr`, source: "demo", created_at: daysAgo(rand(90)) })));
 console.log("✓ newsletter — terminé.");
+
+// 5. Paniers abandonnés (non commandés depuis plus de 24 h) pour le KPI dédié
+for (const c of customers.slice(0, 4)) {
+  const { data: cart } = await supabase.from("carts").upsert({ user_id: c.id }, { onConflict: "user_id" }).select("id").single();
+  if (!cart) continue;
+  const v = pick(variants);
+  await supabase.from("cart_items").upsert({ cart_id: cart.id, variant_id: v.id, quantity: 1 }, { onConflict: "cart_id,variant_id" });
+  await supabase.from("carts").update({ updated_at: daysAgo(2 + rand(10)) }).eq("id", cart.id);
+}
+console.log("✓ paniers abandonnés");

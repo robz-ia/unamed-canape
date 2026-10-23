@@ -16,7 +16,7 @@ let { data, error } = await supabase.auth.admin.createUser({
   email,
   password,
   email_confirm: true,
-  user_metadata: { first_name: "Admin", last_name: "Unamed" },
+  user_metadata: { first_name: "Direction", last_name: "Unamed" },
 });
 
 let userId = data?.user?.id;

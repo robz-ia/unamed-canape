@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
-import { findVariant } from "@/lib/data";
+import { findVariant, validGuestLines } from "@/lib/data";
 import { readGuestCart, writeGuestCart } from "@/lib/guest-cart";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/lib/types";
@@ -25,9 +25,9 @@ async function currentUser() {
 
 // À la connexion : le panier invité rejoint le panier du compte
 async function mergeGuestCart(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const lines = await readGuestCart();
+  const lines = await validGuestLines();
   for (const l of lines) await supabase.rpc("add_to_cart", { p_variant_id: l.v, p_quantity: l.q });
-  if (lines.length) await writeGuestCart([]);
+  await writeGuestCart([]);
 }
 
 const safeNext = (next: FormDataEntryValue | null) => {
@@ -119,7 +119,7 @@ export async function addToCart(variantId: string, quantity: number) {
   const variant = await findVariant(variantId);
   if (!variant) return { error: "Cette configuration n'existe plus." };
   if (variant.stock === 0) return { error: "Cette configuration est momentanément épuisée." };
-  const lines = await readGuestCart();
+  const lines = await validGuestLines();
   const line = lines.find((l) => l.v === variantId);
   const qty = Math.min((line?.q ?? 0) + quantity, variant.stock, 10);
   const next = line ? lines.map((l) => (l.v === variantId ? { ...l, q: qty } : l)) : [...lines, { v: variantId, q: qty }];
