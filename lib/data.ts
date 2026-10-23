@@ -1,3 +1,4 @@
+import { unstable_rethrow } from "next/navigation";
 import { FALLBACK_CATEGORIES, FALLBACK_PRODUCTS } from "@/lib/catalog";
 import { readGuestCart } from "@/lib/guest-cart";
 import { SUPABASE_CONFIGURED } from "@/lib/supabase/env";
@@ -45,6 +46,7 @@ export async function getProducts(opts: { category?: string; sort?: string; feat
   try {
     return await fetchProducts(opts);
   } catch (error) {
+    unstable_rethrow(error); // signaux internes de Next (rendu dynamique…) : ne pas les avaler
     console.error("Catalogue Supabase indisponible, catalogue local utilisé :", error);
     return fallbackProducts(opts);
   }

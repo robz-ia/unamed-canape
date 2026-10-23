@@ -46,7 +46,7 @@ export default function HeaderBar({ count, isLogged, firstName, isAdmin }: Props
               </Link>
             )}
             <Link href={isLogged ? "/compte" : "/connexion"} className="eyebrow hidden md:inline link-underline">
-              {isLogged ? firstName || "Compte" : "Compte"}
+              {isLogged && !isAdmin && firstName ? firstName : "Compte"}
             </Link>
             <Link href="/panier" className="eyebrow link-underline whitespace-nowrap" aria-label={`Panier, ${count} article(s)`}>
               <span className="hidden sm:inline">Panier </span>
