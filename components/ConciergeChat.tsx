@@ -35,9 +35,15 @@ export default function ConciergeChat() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
 
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), [turns, loading]);
+  // Défile le fil de discussion (et non la page) jusqu'au dernier message.
+  // Corps en bloc : un effet ne doit rien renvoyer d'autre qu'une fonction de nettoyage
+  // (scrollIntoView renvoie une promesse dans les navigateurs récents → plantage React).
+  useEffect(() => {
+    const el = box.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [turns, loading]);
 
   async function send(text: string) {
     const content = text.trim();
@@ -63,7 +69,7 @@ export default function ConciergeChat() {
 
   return (
     <div className="border border-ink bg-paper">
-      <div className="h-[52vh] min-h-[360px] overflow-y-auto p-6 md:p-10 space-y-8">
+      <div ref={box} data-lenis-prevent className="h-[52vh] min-h-[360px] overflow-y-auto overscroll-contain p-6 md:p-10 space-y-8">
         {turns.map((t, i) => (
           <div key={i} className={`max-w-[85%] animate-fade-up ${t.role === "user" ? "ml-auto text-right" : ""}`}>
             <p className="eyebrow text-stone mb-2">{t.role === "user" ? "Vous" : "Le Concierge"}</p>
@@ -73,7 +79,6 @@ export default function ConciergeChat() {
           </div>
         ))}
         {loading && <p className="eyebrow text-stone animate-pulse">Le Concierge réfléchit…</p>}
-        <div ref={end} />
       </div>
       {turns.length === 1 && (
         <div className="px-6 md:px-10 pb-4 flex flex-wrap gap-2">
