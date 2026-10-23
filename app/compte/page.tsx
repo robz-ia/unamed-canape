@@ -71,7 +71,11 @@ export default async function Compte() {
             {orders?.map((o) => {
               const step = STEPS.indexOf(o.status as OrderStatus);
               return (
-                <li key={o.id} className="border border-line p-6 md:p-8">
+                <li key={o.id}>
+                  <Link
+                    href={`/compte/commandes/${o.id}`}
+                    className="block border border-line p-6 md:p-8 transition-colors hover:border-ink"
+                  >
                   <div className="flex flex-wrap justify-between gap-4">
                     <div>
                       <p className="eyebrow">{o.order_number}</p>
@@ -99,6 +103,7 @@ export default async function Compte() {
                       ))}
                     </ol>
                   )}
+                  </Link>
                 </li>
               );
             })}
