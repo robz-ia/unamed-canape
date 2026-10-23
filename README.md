@@ -6,6 +6,8 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 
 **Équipe** : Robin Machard · Marc
 
+**En ligne** : https://unamed-canape.vercel.app — base Supabase « GALAAD » — déploiement continu Vercel (chaque push sur `main` est mis en ligne).
+
 ---
 
 ## Fonctionnalités
