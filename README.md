@@ -4,9 +4,41 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 
 **Stack** : Next.js 16 (App Router) · Tailwind CSS v4 · Supabase (Auth, Postgres, RLS) · Claude API · Vercel
 
-**Équipe** : Robin Machard · Marc
+**Équipe** : Robin Machard · Marc (marcclby972-netizen)
 
 **En ligne** : https://unamed-canape.vercel.app — base Supabase « GALAAD » — déploiement continu Vercel (chaque push sur `main` est mis en ligne).
+
+---
+
+## Guide de correction
+
+> Les identifiants (administrateur et client de test) sont transmis avec le rendu, pas dans ce dépôt public.
+> Codes promo : `BIENVENUE10` (−10 %) et `SALON200` (−200 € dès 2 000 €).
+
+### Parcours conseillé (10 minutes)
+
+| # | Action | Ce qu'on vérifie |
+|---|---|---|
+| 1 | Ouvrir https://unamed-canape.vercel.app | Intro animée, hero « mur de galerie », défilement fluide |
+| 2 | Menu → **Fauteuils** | Catégories n-n : Nuage apparaît en *fauteuil 110 cm*, Rive Gauche en *une place* |
+| 3 | Fiche **Rive Gauche** → cliquer « Une place », puis « Latex naturel » | Chaque configuration a ses photos et son prix (1 690 € → 1 190 € → 1 310 €) |
+| 4 | Fiche **Alma** → cliquer « Vert forêt » | Les photos glissent vers l'Alma vert |
+| 5 | « Ajouter au panier » **sans être connecté** | Panier invité (cookie), compteur dans l'en-tête |
+| 6 | Panier → Commander → **Créer un compte** | Le panier invité rejoint le compte (fusion en base) |
+| 7 | Commande avec `BIENVENUE10` | Remise, livraison offerte, commande atomique (stock décrémenté) |
+| 8 | **Mon compte** → cliquer sur la commande | Suivi détaillé : lignes, totaux, frise des statuts, historique du panier |
+| 9 | **/concierge** : « Studio de 25 m², des amis dorment chez moi, 2 000 € » | Conseiller IA piloté par le skill `concierge-canape` + catalogue réel |
+| 10 | Se connecter en **admin** → `/admin` | KPIs (CA, conversion, panier moyen, paniers abandonnés…), commandes, stock, clients |
+
+### Où voir chaque critère
+
+| Critère | Où regarder |
+|---|---|
+| **Qualité du site (UI/UX)** | Toutes les pages ; animations dans `components/motion/`, charte dans `.claude/skills/unamed-design-system` ; responsive mobile |
+| **Base de données** | `supabase/migrations/` : 17 tables, 30 politiques RLS, triggers (profil auto, journal du panier, historique des statuts), fonctions `add_to_cart`, `validate_coupon`, `place_order` (transaction + verrou de stock), `admin_kpis` ; modèle d'options à deux axes et catégories n-n |
+| **Travail d'équipe** | Historique Git : Robin (socle, base, design, déploiement) · Marc (suivi détaillé des commandes) |
+| **Skills** | `.claude/skills/` : 5 skills projet ; `concierge-canape` est chargé **en production** comme prompt système de `/api/concierge` |
+| **Complexité & créativité** | Conseiller IA, configurations avec photos dédiées, panier invité fusionné à la connexion, KPIs calculés en SQL, hero et transitions animés |
 
 ---
 
@@ -18,10 +50,11 @@ Boutique en ligne de canapés de créateurs : six pièces, un design luxe et min
 | Boutique | Canapés / Fauteuils / Convertibles — un produit apparaît dans chaque catégorie qui le concerne (Nuage est canapé *et* fauteuil), dans la bonne configuration ; tri par prix, fiche produit éditoriale (photos plein format, coloris qui affichent leur photo), stock en temps réel |
 | Panier | **Sans compte** (cookie 30 jours), puis fusionné en base à la connexion ; quantités plafonnées au stock, **historique complet** de chaque action |
 | Commande | Codes promo, livraison offerte dès 1 500 €, commande **atomique** côté base (stock décrémenté, prix figés, panier vidé) |
-| Espace client | Suivi de commande étape par étape, montant total dépensé, historique du panier |
+| Espace client | Commandes et page de **suivi détaillé** (lignes, totaux, frise des statuts), adresses, montant total dépensé, historique du panier |
 | Administration | Accès réservé au rôle `admin` : KPIs (CA, commandes, panier moyen, conversion, paniers abandonnés…), graphique du CA, top ventes, stock faible, gestion des statuts de commande, du stock et de la mise en ligne |
-| Le Concierge | Conseiller IA qui recommande la bonne pièce à partir du catalogue réel ; repli par règles sans clé API |
+| Le Concierge | Conseiller IA (Claude) qui recommande la bonne pièce à partir du catalogue et des stocks réels ; repli par règles sans clé API |
 | Marketing | Newsletter, journal des vues produit, journal des conversations du Concierge |
+| Légal | Mentions légales et conditions générales de vente |
 
 ## Base de données
 
@@ -91,13 +124,13 @@ cp .env.example .env.local   # puis renseigner les clés Supabase
 
 ## Déploiement Vercel
 
-Importer le dépôt GitHub sur Vercel et renseigner `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` et (optionnel) `ANTHROPIC_API_KEY`. Ne jamais ajouter la clé `service_role` sur Vercel.
+Importer le dépôt GitHub sur Vercel : l'URL et la clé *publishable* Supabase sont publiques par conception et déjà dans `lib/supabase/env.ts` (la sécurité repose sur les politiques RLS). Seule `ANTHROPIC_API_KEY` est à ajouter dans les variables d'environnement pour activer le Concierge IA. Ne jamais ajouter la clé `service_role` sur Vercel.
 
 ## Comptes de test
 
 | Rôle | Accès |
 |---|---|
-| Client | créer un compte sur `/inscription` |
-| Admin | identifiants créés à l'étape 4 → `/admin` |
+| Client | compte de test transmis avec le rendu, ou en créer un sur `/inscription` |
+| Admin | identifiants transmis avec le rendu (créés par `scripts/create-admin.mjs`) → `/admin` |
 
 Codes promo : `BIENVENUE10` (−10 %), `SALON200` (−200 € dès 2 000 €).
