@@ -46,7 +46,11 @@ export default function Footer() {
       <div className="border-t border-paper/10">
         <div className="mx-auto max-w-[1600px] px-5 md:px-10 py-6 flex flex-col md:flex-row justify-between gap-3 eyebrow !text-[0.6rem] text-paper/40">
           <span>© {new Date().getFullYear()} Unamed Canapé. — Paris</span>
-          <span>Livraison & installation offertes dès 1 500 € · Retours 30 jours</span>
+          <span className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link href="/mentions-legales" className="link-underline hover:text-paper transition-colors">Mentions légales</Link>
+            <Link href="/cgv" className="link-underline hover:text-paper transition-colors">CGV</Link>
+            <span>Livraison & installation offertes dès 1 500 € · Retours 30 jours</span>
+          </span>
         </div>
       </div>
     </footer>
