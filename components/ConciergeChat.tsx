@@ -11,19 +11,71 @@ const SUGGESTIONS = [
   "Je cherche le canapé le plus confortable, budget 3 000 €.",
 ];
 
-// Transforme [Nom](/produit/slug) en bouton
-function render(text: string) {
-  const parts = text.split(/(\[[^\]]+\]\(\/produit\/[a-z0-9-]+\))/g);
-  return parts.map((p, i) => {
-    const m = p.match(/^\[([^\]]+)\]\((\/produit\/[a-z0-9-]+)\)$/);
-    return m ? (
-      <Link key={i} href={m[2]} className="btn btn-solid !py-2.5 !px-5 mt-4 flex w-max">
-        Voir {m[1]} →
-      </Link>
-    ) : (
-      <span key={i}>{p}</span>
-    );
+const PRODUCT_LINK = /\[([^\]]+)\]\((\/produit\/[a-z0-9-]+(?:\?[^)\s]*)?)\)/g;
+const HAS_PRODUCT_LINK = new RegExp(PRODUCT_LINK.source); // sans « g » : .test() sans état
+
+// Gras **…** et italique *…* dans une ligne
+function inline(text: string, key: string) {
+  return text.split(/(\*\*[^*]+\*\*|\*[^*\s][^*]*\*)/g).map((part, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(part)) return <strong key={`${key}-${i}`} className="font-medium">{part.slice(2, -2)}</strong>;
+    if (/^\*[^*]+\*$/.test(part)) return <em key={`${key}-${i}`}>{part.slice(1, -1)}</em>;
+    return part;
   });
+}
+
+// Mise en forme légère des réponses : paragraphes, listes, gras, et liens produit → boutons.
+function render(text: string) {
+  const links = [...text.matchAll(PRODUCT_LINK)].map((m) => ({ label: m[1], href: m[2] }));
+  const unique = links.filter((l, i) => links.findIndex((x) => x.href === l.href) === i);
+  const body = text
+    // une ligne qui ne contient que des liens produit devient des boutons : on la retire du texte
+    .split("\n")
+    .filter((line) => line.replace(PRODUCT_LINK, "").replace(/[\s,.;·—–-]/g, "") !== "" || !HAS_PRODUCT_LINK.test(line))
+    .join("\n")
+    .replace(PRODUCT_LINK, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // autres liens : texte seul
+    .replace(/^#{1,6}\s*/gm, "")
+    .trim();
+
+  const blocks = body.split(/\n\s*\n/).filter((b) => b.trim());
+  return (
+    <>
+      {blocks.map((block, bi) => {
+        const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+        if (lines.every((l) => /^([-•*]|\d+[.)])\s+/.test(l))) {
+          return (
+            <ul key={bi} className="mt-3 first:mt-0 space-y-2">
+              {lines.map((l, li) => (
+                <li key={li} className="flex gap-3">
+                  <span className="text-stone">—</span>
+                  <span>{inline(l.replace(/^([-•*]|\d+[.)])\s+/, ""), `${bi}-${li}`)}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+        return (
+          <p key={bi} className="mt-3 first:mt-0">
+            {lines.map((l, li) => (
+              <span key={li}>
+                {li > 0 && <br />}
+                {inline(l, `${bi}-${li}`)}
+              </span>
+            ))}
+          </p>
+        );
+      })}
+      {unique.length > 0 && (
+        <div className="flex flex-wrap gap-3 mt-5">
+          {unique.map((l) => (
+            <Link key={l.href} href={l.href} className="btn btn-solid !py-2.5 !px-5">
+              Voir {l.label} →
+            </Link>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function ConciergeChat() {
